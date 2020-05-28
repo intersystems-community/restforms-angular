@@ -6,15 +6,13 @@ XData setup
 <Manifest>
   <Default Name="SourceDir" Value="#{$system.Process.CurrentDirectory()}src"/>
   <Default Name="Namespace" Value="IRISAPP"/>
-  <Default Name="app" Value="irisapp" />
-  <Default Name="restapp" Value="/rest-test" />
-
+  <Default Name="app" Value="forms-angular" />
+  
   <Namespace Name="${Namespace}" Code="${Namespace}" Data="${Namespace}" Create="yes" Ensemble="no">
 
     <Configuration>
       <Database Name="${Namespace}" Dir="/opt/${app}/data" Create="yes" Resource="%DB_${Namespace}"/>
 
-      <Import File="${SourceDir}" Flags="ck" Recurse="1"/>
     </Configuration>
     <CSPApplication Url="/csp/${app}" 
       Directory="${cspdir}${app}" 
@@ -24,13 +22,6 @@ XData setup
       AuthenticationMethods="32"
        
     />
-    <CSPApplication Url="${restapp}"
-      Recurse="1"
-      Directory="${cspdir}${restapp}" 
-      Grant="%DB_${Namespace},%SQL"
-      AuthenticationMethods="96"
-      />
-
   </Namespace>
     <Invoke Class="App.Installer" Method="SetDispatchClass">
     <Arg Value="${restapp}"/>
