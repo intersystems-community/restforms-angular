@@ -1,4 +1,5 @@
 import {Component} from '@angular/core';
+import {HeaderService} from './services/header.service';
 
 @Component({
     selector: 'rf-root',
@@ -6,5 +7,9 @@ import {Component} from '@angular/core';
     styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-    title = 'RestFormsUI2';
+    title = 'RestForms';
+
+    constructor(public hs: HeaderService) {
+
+    }
 }

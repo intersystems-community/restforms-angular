@@ -1,0 +1,34 @@
+$font: "Roboto Condensed";
+$animSpeed: 0.2s;
+$inputHeight: 30px;
+
+$content-width: 1120px;
+
+:root {
+    --cl-bg: linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
+
+    --cl-txt-main: black;
+    --cl-txt: #7c7c7c;
+    --cl-txt-btn: white;
+    --cl-accent: #4fb6ff;
+    --cl-error: #d11818;
+
+    --input-border-radius: 4px;
+
+    // Button
+    --cl-btn-bg: #5c7db8;
+    --cl-btn-border: #4c5dae;
+    --cl-btn-hover: #7192d1;
+
+    // Header
+    --header-height: 58px;
+    --cl-header-bg: #315fa6;
+    --cl-header-txt: white;
+    --cl-header-btn-hover: rgba(255, 255, 255, 0.15);
+
+    // Forms
+    --cl-form-txt: #666666;
+
+    // Table
+    --cl-row-hover: rgba(0, 0, 0, 0.05);
+}

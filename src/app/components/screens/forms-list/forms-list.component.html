@@ -1,0 +1,43 @@
+<!-- Headline -->
+<div class="headline">
+    <!-- Title with count -->
+    <h1>Forms <span [hidden]="isLoading" class="count">{{dataSource.filteredData.length}}</span></h1>
+
+    <button class="btn btn-success"><mat-icon>add</mat-icon>Create</button>
+
+    <!-- Search filed -->
+    <div class="search" [hidden]="isLoading">
+        <mat-icon>search</mat-icon>
+        <input (keyup)="applyFilter($event)" type="search" placeholder="Search" rfBlurOnEnter>
+    </div>
+</div>
+
+<!-- Main table -->
+<table mat-table [dataSource]="dataSource" matSort matSortActive="name" matSortDirection="desc" matSortDisableClear>
+    <!-- Name Column -->
+    <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Name </th>
+        <td mat-cell *matCellDef="let row"> {{row.name}} </td>
+    </ng-container>
+
+    <!-- Class Column -->
+    <ng-container matColumnDef="class">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header> Class </th>
+        <td mat-cell *matCellDef="let row"> {{row.class}} </td>
+    </ng-container>
+
+    <!-- Table header -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+
+    <!-- Table rows -->
+    <tr mat-row [hidden]="isLoading" *matRowDef="let row; columns: displayedColumns;"></tr>
+</table>
+
+<!-- Loading Spinner -->
+<mat-spinner [hidden]="!isLoading" diameter="60"></mat-spinner>
+
+<!-- No data message -->
+<div class="no-data" *ngIf="dataSource.filteredData.length === 0 && !isLoading">No data to display</div>
+
+<!-- Paginator -->
+<mat-paginator [pageSizeOptions]="[10, 25, 100]"></mat-paginator>

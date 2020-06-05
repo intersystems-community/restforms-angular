@@ -1,0 +1,143 @@
+@import "src/scss/variables";
+
+:host {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: calc(var(--header-height) + 50px);
+    margin-bottom: 20px;
+    width: $content-width;
+    height: 100%;
+    flex-shrink: 1;
+    background: white;
+    padding: 20px 20px 10px;
+    /* border: 1px solid #d4d4d4; */
+    box-shadow: #00000045 0 0 4px 0;
+    border-radius: 2px;
+}
+
+// Main table
+table {
+    width: 100%;
+}
+
+// Title text
+h1 {
+    font-family: $font;
+    font-size: 18px;
+    padding: 0;
+    margin: 0;
+    // margin: 0 0 20px;
+
+    color: var(--cl-form-txt);
+}
+
+// Title row
+.headline {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    color: var(--cl-form-txt);
+    & > h1 {
+        width: 100%;
+    }
+}
+
+// Search container
+.search {
+    position: relative;
+
+    // Search icon
+    & > mat-icon {
+        pointer-events: none;
+        margin-top: 4px;
+        margin-left: 4px;
+        position: absolute;
+        opacity: 0.6;
+    }
+}
+
+// Search input
+input {
+    font-family: $font;
+    width: 150px;
+    box-shadow: none;
+    background-color: #eaeaea;
+    padding: 2px 10px 2px 30px;
+
+    // Input placegolder
+    &::placeholder {
+        font-family: $font;
+    }
+
+    // Remove border for non focused input
+    &:not(:focus) {
+        border: none;
+    }
+
+    // Fix text jump on focus(because there is border 2px)
+    &:focus {
+        padding-left: 28px;
+    }
+
+    // Remove clear button
+    &::-webkit-search-decoration,
+    &::-webkit-search-cancel-button,
+    &::-webkit-search-results-button,
+    &::-webkit-search-results-decoration {
+        -webkit-appearance:none;
+    }
+}
+
+// Column width TODO: make for more than 2 cols
+td, th {
+    font-family: $font;
+    width: 50%;
+}
+
+// Table row style
+tr[mat-row] {
+    cursor: pointer;
+    background-color: transparent;
+    transition: background-color $animSpeed linear;
+    &:hover {
+        background-color: var(--cl-row-hover);
+    }
+}
+
+// Rows count on title
+.count {
+    border-radius: 2px;
+    background-color: var(--cl-form-txt);
+    color: white;
+    padding: 0 4px;
+}
+
+// No data message
+.no-data {
+    font-family: $font;
+    color: var(--cl-form-txt);
+    text-align: center;
+    margin-top: 60px;
+    margin-bottom: 40px;
+}
+
+// Paging
+mat-paginator {
+    width: 100%;
+}
+
+// Loading spinner
+mat-spinner {
+    margin-top: 60px;
+    margin-bottom: 40px;
+}
+
+.btn {
+    margin-right: 20px;
+    margin-left: auto;
+    height: $inputHeight;
+    min-width: 100px;
+    padding: 0 10px;
+}

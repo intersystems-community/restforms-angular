@@ -1,0 +1,37 @@
+<span class="ver">v.{{model.version}}</span>
+
+<div class="login-form">
+    <!-- Logo -->
+    <div class="logo">
+        <img src="assets/forms2.svg" height="100px" alt="logo">
+        <span>RestForms</span>
+    </div>
+
+    <label>Login</label>
+    <input [formControl]="login" type="text" placeholder="Login" rfAutoFocus rfFocusNext="pwd">
+
+    <label>Password</label>
+    <input [formControl]="password" id="pwd" type="password" required rfFocusNext="server">
+
+    <label>Server</label>
+    <input [formControl]="server" id="server" type="text" required rfFocusNext="path">
+
+<!--    <label>Port</label>-->
+<!--    <input [formControl]="port" id="port" type="text" required rfFocusNext="path">-->
+
+    <label>Web App</label>
+    <input [formControl]="path" id="path" type="text" required rfFocusNext="btnLogin">
+
+    <div class="footer">
+        <button (click)="onLoginClick()" id="btnLogin" class="btn btn-success">Sign in</button>
+    </div>
+
+    <div class="msg-error" [hidden]="!model.error">
+        {{model.error}}
+    </div>
+
+    <!-- Loading Spinner -->
+    <mat-progress-bar mode="indeterminate" [hidden]="!isLoading"></mat-progress-bar>
+</div>
+
+
