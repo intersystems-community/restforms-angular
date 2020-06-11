@@ -4,6 +4,7 @@ import {Observable, of} from 'rxjs';
 import {ConfigService} from './config.service';
 import {Router} from '@angular/router';
 import {catchError, map} from 'rxjs/operators';
+import {ErrorService} from './error.service';
 
 export interface ILoginResponse {
     data: any;
@@ -29,6 +30,7 @@ export class DataService {
 
     constructor(private http: HttpClient,
                 private cs: ConfigService,
+                private es: ErrorService,
                 private router: Router) {
     }
 
@@ -47,8 +49,8 @@ export class DataService {
                 'X-Requested-With': 'XMLHttpRequest'
             })
         }).pipe(catchError((err) => {
-            console.log(err);
-            return of();
+            this.es.show(err.message);
+            throw err;
         }));
     }
 

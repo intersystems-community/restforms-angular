@@ -1,5 +1,6 @@
 import {Component} from '@angular/core';
 import {HeaderService} from './services/header.service';
+import {ErrorService, IError} from './services/error.service';
 
 @Component({
     selector: 'rf-root',
@@ -9,7 +10,10 @@ import {HeaderService} from './services/header.service';
 export class AppComponent {
     title = 'RestForms';
 
-    constructor(public hs: HeaderService) {
+    constructor(public hs: HeaderService, public es: ErrorService) {
+    }
 
+    trackError(idx: number, err: IError) {
+        return err.id;
     }
 }

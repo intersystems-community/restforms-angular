@@ -1,2 +1,9 @@
 <rf-header *ngIf="hs.visible$ | async"></rf-header>
 <router-outlet></router-outlet>
+
+<!-- Error list -->
+<rf-error
+    *ngFor="let err of es.errors$ | async; let idx = index; trackBy:trackError"
+    [@toggleError]
+    [error]="err">
+</rf-error>
