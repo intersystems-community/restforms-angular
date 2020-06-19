@@ -1,6 +1,10 @@
 @import "variables";
 
-input, textarea, select {
+@mixin invalid-input {
+    border: 2px solid var(--cl-error);
+}
+
+input, textarea, select, ng-select > .ng-select-container {
     display: block;
     height: $inputHeight;
     border-radius: var(--input-border-radius);
@@ -22,8 +26,14 @@ input, textarea, select {
         padding: 1px 11px 0;
     }
 
+    // Invalid for angular to set automatically
     &.ng-touched.ng-invalid {
-        border: 2px solid var(--cl-error);
+       @include invalid-input;
+    }
+
+    // Invalid class to set manually
+    &.ng-touched.invalid {
+        @include invalid-input;
     }
 
     &::placeholder {
@@ -47,7 +57,7 @@ input:not([type=checkbox]), textarea {
     color: var(--cl-txt-btn);
     padding: 0 12px;
     margin-bottom: 0;
-    height: 36px;
+    height: $button-height;
     font-size: 16px;
     text-align: center;
     white-space: nowrap;
@@ -79,6 +89,13 @@ input:not([type=checkbox]), textarea {
     &:focus {
         border: 2px solid var(--cl-accent);
     }
+
+    // Disabled button state
+    &[disabled] {
+        pointer-events: none;
+        opacity: 0.5;
+        filter: grayscale(1);
+    }
 }
 
 label {
@@ -97,6 +114,33 @@ label {
     }
 }
 
+.btn-text {
+    color: var(--cl-txt-main);
+    box-shadow: none;
+    border: none;
+    background-color: transparent;
+
+    &:hover {
+        background-color: var(--cl-row-hover);
+    }
+}
+
+
+// Invalid state of ng-select
+ng-select.ng-invalid.ng-touched .ng-select-container {
+    @include invalid-input;
+}
+
+//ng-select {
+//    border:0;
+//    min-height: 0;
+//    border-radius: 0;
+//}
+//ng-select .ng-select-container  {
+//    min-height: 0px;
+//    border-radius: 0;
+//}
+
 //.btn-link {
 //    background-color: transparent;
 //    border: none;
@@ -107,3 +151,38 @@ label {
 //        color: #5c49d1;
 //    }
 //}
+
+// Fix ng select styles
+ng-select > .ng-select-container {
+    padding: 0;
+
+    // Text during editing in input
+    & .ng-input > input {
+        margin-left: -12px;
+        margin-top: -4px;
+
+        font-family: $font;
+        font-size: 16px;
+        color: var(--cl-txt-main);
+    }
+
+    // text after editing
+    & .ng-value-label {
+        font-family: $font;
+        font-size: 16px;
+        color: var(--cl-txt-main);
+    }
+}
+
+// Removed glow of nf-select
+.ng-select.ng-select-focused:not(.ng-select-opened)>.ng-select-container {
+    box-shadow: none;
+}
+
+ng-select.ng-select-focused > .ng-select-container  {
+    border: 2px solid var(--cl-accent);
+}
+
+.ng-select.ng-select-opened>.ng-select-container {
+    border: 2px solid var(--cl-accent);
+}

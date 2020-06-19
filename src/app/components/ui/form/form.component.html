@@ -1,0 +1,155 @@
+<div class="prop-container" *ngFor="let prop of properties; let idx = index">
+
+    <!-- Property label -->
+    <div class="prop-label">
+        <!-- Validation icon -->
+        <span
+            [hidden]="validation.get(prop.name).isValid"
+            class="error"
+            [matTooltip]="validation.get(prop.name).message"
+            matTooltipPosition="left">
+            <mat-icon>warning</mat-icon>
+        </span>
+        <!-- Text -->
+        <label>{{prop.displayName}}{{!!prop.required ? '*': ''}}</label>
+    </div>
+
+    <!-- Property container -->
+    <ng-container [ngSwitch]="getPropType(prop)">
+        <!-- String -->
+        <ng-container *ngSwitchCase="FieldType.String">
+            <input
+                type="text"
+                [id]="'prop' + idx"
+                [class.invalid]="!validation.get(prop.name).isValid"
+                [(ngModel)]="data[prop.name]"
+                [maxlength]="prop.maxlen"
+                [rfFocusNext]="'prop' + (idx + 1)"
+                (keyup)="validate(prop)"
+                (change)="validate(prop)"
+            >
+        </ng-container>
+
+        <!-- Numeric -->
+        <!-- TODO: make numeric filed validation -->
+        <ng-container *ngSwitchCase="FieldType.Numeric">
+            <input
+                type="text"
+                [id]="'prop' + idx"
+                [class.invalid]="!validation.get(prop.name).isValid"
+                [(ngModel)]="data[prop.name]"
+                [maxlength]="prop.maxlen"
+                [rfFocusNext]="'prop' + (idx + 1)"
+                (keyup)="validate(prop)"
+                (change)="validate(prop)"
+            >
+            <!-- TODO: add input actions for number field -->
+<!--            <div calss="input-actions">-->
+<!--                <button class="btn btn-icon"><mat-icon>expand_less</mat-icon></button>-->
+<!--                <button class="btn btn-icon"><mat-icon>expand_more</mat-icon></button>-->
+<!--            </div>-->
+        </ng-container>
+
+        <!-- Integer -->
+        <!-- TODO: make integer filed validation -->
+        <ng-container *ngSwitchCase="FieldType.Integer">
+            <input
+                type="text"
+                [id]="'prop' + idx"
+                [class.invalid]="!validation.get(prop.name).isValid"
+                [(ngModel)]="data[prop.name]"
+                [maxlength]="prop.maxlen"
+                [rfFocusNext]="'prop' + (idx + 1)"
+                (keyup)="validate(prop)"
+                (change)="validate(prop)"
+            >
+        </ng-container>
+
+        <!-- Date -->
+        <div class="prop" *ngSwitchCase="FieldType.Date">
+            <mat-form-field>
+                <!-- TODO: make datepicker show initial date as selected -->
+                <input matInput (dateChange)="onDateChange(prop, $event.value)" [value]="data[prop.name]" [matDatepicker]="picker" [required]="!!prop.required">
+                    <mat-datepicker #picker [startAt]="dateFromString(data[prop.name])"></mat-datepicker>
+                </mat-form-field>
+            <input
+                #inp
+                class="input-date"
+                type="text"
+                [id]="'prop' + idx"
+                [class.invalid]="!validation.get(prop.name).isValid"
+                [(ngModel)]="data[prop.name]"
+                [required]="!!prop.required"
+                [rfFocusNext]="'prop' + (idx + 1)"
+                (keydown.tab)="hidePicker(picker)"
+                (keydown.enter)="hidePicker(picker)"
+                (click)="openDatePicker(picker, inp)"
+                (keyup)="validate(prop)"
+                (change)="validate(prop)"
+                pattern="">
+            <button class="btn btn-icon btn-date" (click)="openDatePicker(picker, inp)" ><mat-icon>calendar_today</mat-icon></button>
+        </div>
+
+        <!-- Timestamp -->
+        <div class="prop"  *ngSwitchCase="FieldType.TimeStamp">
+            <mat-form-field>
+                <!-- TODO: make datepicker show initial date as selected -->
+                <input matInput (dateChange)="onDateChange(prop, $event.value, true)" [value]="data[prop.name]" [matDatepicker]="picker" [required]="!!prop.required">
+                <mat-datepicker #picker [startAt]="dateFromString(data[prop.name])"></mat-datepicker>
+            </mat-form-field>
+            <input
+                #inp
+                class="input-date"
+                type="text"
+                [id]="'prop' + idx"
+                [class.invalid]="!validation.get(prop.name).isValid"
+                [value]="data[prop.name]?.split('T')[0]"
+                [required]="!!prop.required"
+                [rfFocusNext]="'propEx' + idx"
+                (keydown.tab)="hidePicker(picker)"
+                (keydown.enter)="hidePicker(picker)"
+                (click)="openDatePicker(picker, inp)"
+                (keyup)="changeTimestamp(prop, inp, inpTime); validate(prop)"
+                (change)="changeTimestamp(prop, inp, inpTime); validate(prop)"
+                pattern="">
+            <button class="btn btn-icon btn-date" (click)="openDatePicker(picker, inp)" ><mat-icon>calendar_today</mat-icon></button>
+            <!-- Time input -->
+            <input
+                #inpTime
+                class="input-time"
+                type="text"
+                [id]="'propEx' + idx"
+                [rfDefaultValue]="getTime(data[prop.name])"
+                [rfFocusNext]="'prop' + (idx + 1)"
+                (keyup)="changeTimestamp(prop, inp, inpTime); validate(prop)"
+                (change)="changeTimestamp(prop, inp, inpTime); validate(prop)"
+            >
+        </div>
+
+        <!-- Form type -->
+        <ng-container *ngSwitchCase="FieldType.Form">
+            <!-- TODO: add focus next support -->
+            <!-- TODO: add validation error style -->
+            <ng-select
+                [id]="'prop' + idx"
+                [class.invalid]="!validation.get(prop.name).isValid"
+                [(ngModel)]="data[prop.name]"
+                [items]="relatedData?.get(prop.type)?.children"
+                bindValue="_id"
+                bindLabel="displayName"
+                (change)="validate(prop)"
+            ></ng-select>
+        </ng-container>
+
+        <!-- TODO: add serial type field -->
+        <ng-container *ngSwitchCase="FieldType.Serial">
+            <input type="text" disabled placeholder="Not supported yet">
+        </ng-container>
+
+        <!-- TODO: add array type field -->
+        <ng-container *ngSwitchCase="FieldType.Array">
+            <input type="text" disabled placeholder="Not supported yet">
+        </ng-container>
+
+    </ng-container>
+</div>

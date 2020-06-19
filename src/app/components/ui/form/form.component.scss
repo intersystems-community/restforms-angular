@@ -1,0 +1,84 @@
+@import "src/scss/variables";
+:host {
+    display: block;
+    width: 100%;
+    margin-top: 20px;
+}
+
+// Property label
+.prop-label {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.error {
+    user-select: none;
+    color: var(--cl-error);
+    /* opacity: 0.7; */
+    margin-left: -2px;
+    margin-right: 2px;
+    cursor: pointer;
+    //flex-shrink: 1;
+    height: 0;
+    margin-top: -3px;
+    /* position: absolute; */
+    //left: -22px;
+    //top: 34px;
+    transform: scale(0.9);
+}
+
+// Property container, contains label and property
+.prop-container {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+// Property, contains inputs, etc
+.prop {
+    position: relative;
+    display: flex;
+}
+
+input {
+    font-size: 16px;
+    color: black;
+    height: 36px;
+}
+
+mat-form-field {
+    position: absolute;
+    visibility:hidden;
+    width:0;
+    height: 0;
+    top: -4px;
+}
+
+// Date input
+.input-date {
+    max-width: 150px;
+    padding-right: 28px;
+}
+
+// Time input
+.input-time {
+    margin-left: 10px;
+    width: 100px;
+}
+
+// Button with icon for datepicker, etc.
+.btn-icon {
+    border: none;
+    background-color: transparent;
+    box-shadow: none;
+    color: var(--cl-txt);
+}
+
+.btn-date {
+    position: absolute;
+    bottom: 0;
+    left: 118px;
+}
+
+ng-select {
+    width: 50%;
+}

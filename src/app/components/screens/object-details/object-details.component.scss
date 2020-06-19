@@ -1,0 +1,48 @@
+@import "src/scss/variables";
+
+:host {
+    @include screen;
+    padding-bottom: 20px;
+    position: relative;
+}
+
+h2 {
+    margin-left: auto;
+    font-family: $font;
+    font-size: 14px;
+    color: var(--cl-txt);
+    // opacity: 0.75;
+    flex-shrink: 0;
+    font-weight: normal;
+}
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    margin-top: 10px;
+    & > .btn {
+        height: 36px;
+        margin-left: 0;
+        margin-right: 0;
+
+        &:not(:last-child) {
+            margin-right: 10px;
+        }
+    }
+}
+
+.btn-back {
+    margin-left: -10px;
+}
+
+// Spinner during saving mode
+img.saving {
+    position: absolute;
+    top: 100px;
+}
+
+.disabled {
+    opacity: 0.5;
+    filter: grayscale(1);
+    pointer-events: none;
+}

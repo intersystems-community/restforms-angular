@@ -1,19 +1,7 @@
 @import "src/scss/variables";
 
 :host {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: calc(var(--header-height) + 50px);
-    margin-bottom: 20px;
-    width: $content-width;
-    height: 100%;
-    flex-shrink: 1;
-    background: white;
-    padding: 20px 20px 10px;
-    /* border: 1px solid #d4d4d4; */
-    box-shadow: #00000045 0 0 4px 0;
-    border-radius: 2px;
+    @include screen;
 }
 
 // Main table
@@ -28,20 +16,18 @@ h1 {
     padding: 0;
     margin: 0;
     // margin: 0 0 20px;
-
     color: var(--cl-form-txt);
+    width: 100%;
 }
 
 // Title row
 .headline {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    // align-items: flex-start;
+    align-items: center;
     width: 100%;
     color: var(--cl-form-txt);
-    & > h1 {
-        width: 100%;
-    }
 }
 
 // Search container
@@ -93,7 +79,7 @@ input {
 // Column width TODO: make for more than 2 cols
 td, th {
     font-family: $font;
-    width: 50%;
+    // width: 50%;
 }
 
 // Table row style
@@ -109,9 +95,12 @@ tr[mat-row] {
 // Rows count on title
 .count {
     border-radius: 2px;
-    background-color: var(--cl-form-txt);
-    color: white;
+    // background-color: var(--cl-form-txt);
+    background-color: #eaeaea;
+    color: #666666;
+    // color: white;
     padding: 0 4px;
+    opacity: 0.5;
 }
 
 // No data message
@@ -128,16 +117,51 @@ mat-paginator {
     width: 100%;
 }
 
-// Loading spinner
-mat-spinner {
-    margin-top: 60px;
-    margin-bottom: 40px;
+.btn-settings {
+    width: $inputHeight;
+    min-width: auto;
+    padding: 0;
+    color: #666666;
+    flex-shrink: 0;
+    margin-right: 10px;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    // TODO: depends on empty
+    & > mat-icon {
+        margin: 0;
+        opacity: 0.5;
+    }
 }
 
-.btn {
-    margin-right: 20px;
+.btn-success {
     margin-left: auto;
-    height: $inputHeight;
-    min-width: 100px;
-    padding: 0 10px;
+    margin-right: 10px;
+}
+
+.actions {
+    width: 100px !important; // TODO: remove this
+    padding: 0 !important;
+    & > .btn {
+        border: none;
+        outline: none;
+        display: none;
+        box-shadow: none;
+        transform: none;
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        // display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0.5;
+        & > mat-icon {
+            margin-left: 0;
+        }
+    }
+}
+
+tr:hover > .actions > .btn {
+    display: flex;
 }

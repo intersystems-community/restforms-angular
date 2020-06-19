@@ -1,0 +1,30 @@
+<!-- Headline -->
+<div class="headline">
+
+    <!-- Back button -->
+    <button (click)="goBack()" class="btn-back" title="Back">
+        <mat-icon>chevron_left</mat-icon>
+    </button>
+
+    <!-- Title-->
+    <h1>{{params.id === 'new' ? 'New object' : (data ? data[model?.displayProperty] : '')}}</h1>
+    <h2>{{params.class}}</h2>
+    <!-- Action buttons -->
+<!--    <button *ngIf="!isLoading && isCreate" class="btn btn-success"><mat-icon>add</mat-icon>Create</button>-->
+<!--    <button *ngIf="!isLoading && isSettings" class="btn btn-settings"><mat-icon>settings</mat-icon></button>-->
+
+</div>
+
+<!-- Loading Spinner -->
+<img [hidden]="!isLoading && !isSaving" [class.saving]="isSaving" src="/assets/spinner.svg">
+<!--<mat-spinner [hidden]="!isLoading" diameter="60"></mat-spinner>-->
+
+<!-- Form -->
+<rf-form #form *ngIf="!isLoading" [class.disabled]="isSaving" [properties]="model?.fields" [data]="data" [relatedData]="relatedData"></rf-form>
+
+<!-- Actions -->
+<div class="actions" *ngIf="!isLoading">
+    <button (click)="goBack()" class="btn btn-text">Cancel</button>
+    <button (click)="save()" class="btn btn-success" [disabled]="isSaving">Save</button>
+</div>
+

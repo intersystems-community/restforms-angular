@@ -6,6 +6,26 @@ import {Router} from '@angular/router';
 import {catchError, map} from 'rxjs/operators';
 import {ErrorService} from './error.service';
 
+// Field information
+export interface IFieldInfo {
+    name: string;
+    type: string;
+    collection: string;
+    displayName: string;
+    maxlen: string;
+    required: number;
+    category: string;
+}
+
+// Object information
+export interface IObjectInfo {
+    name: string;
+    class: string;
+    displayProperty: string;
+    objpermissions: string; // CRUD
+    fields: IFieldInfo[];
+}
+
 export interface ILoginResponse {
     data: any;
     url: string;
@@ -17,16 +37,44 @@ export interface IFormData {
     class: string;
 }
 
+export interface IFormDataEx {
+    children: IFormData[];
+}
+
+// Objects information from 'info' query
+export interface IObjectData {
+    _id: string;
+    displayName: string;
+}
+
+// Object list from OBJECTS_LIST request
+export interface IObjectList {
+    children: IObjectData[];
+}
+
+
 // API endpoints
-enum ENDPOINTS {
+export const enum ENDPOINTS {
     TEST = 'test',
-    FORMS_LIST= 'form/info'
+    FORMS_LIST = 'form/info',
+    OBJECTS_LIST = 'form/objects/{class}/{query}',
+    OBJECT_SAVE = 'form/object/{class}/{id}',
+    OBJECT_DELETE = 'form/object/{class}/{id}'
 }
 
 @Injectable({
     providedIn: 'root'
 })
 export class DataService {
+
+    private errorHandler = catchError(err => {
+        if (err.status === 401) {
+            void this.router.navigateByUrl('login');
+            return of();
+        }
+        this.es.show(err.message);
+        throw err;
+    });
 
     constructor(private http: HttpClient,
                 private cs: ConfigService,
@@ -37,23 +85,24 @@ export class DataService {
     /**
      * Performs GET request
      */
-    private get(url: string): Observable<any> {
+    public get(url: string): Observable<any> {
         const api = this.cs.getAPiUrl();
         if (!api) {
-            this.router.navigateByUrl('/');
+            void this.router.navigateByUrl('/');
             return;
         }
-        return this.http.get(api + url, {
-            withCredentials: false,
-            headers: new HttpHeaders({
-                'X-Requested-With': 'XMLHttpRequest'
-            })
-        }).pipe(catchError((err) => {
-            this.es.show(err.message);
-            throw err;
-        }));
+        return this.http.get(api + url, this.getOptions()).pipe(this.errorHandler);
     }
 
+    private getOptions() {
+        return {
+            withCredentials: false,
+            headers: new HttpHeaders({
+                'Content-Type': 'application/json; charset=utf-8',
+                'X-Requested-With': 'XMLHttpRequest'
+            })
+        };
+    }
     /**
      * Return valid API url from any url like "http://domain.com///rest//api/" > "http://domain.com/rest/api/"
      */
@@ -94,7 +143,47 @@ export class DataService {
     /**
      * Returns list of forms
      */
-    getForms(): Promise<IFormData[]> {
-        return this.get(ENDPOINTS.FORMS_LIST).toPromise();
+    formInfo(className: string) {
+        return this.get('form/info/' + className).toPromise();
+    }
+
+    /**
+     * Returns list of forms
+     */
+    objectData(className: string, id: string) {
+        return this.get('form/object/' + className + '/' + id).toPromise();
+    }
+
+    async saveObject(className: string, id: string, data: any) {
+        const api = this.cs.getAPiUrl();
+        if (!api) {
+            void this.router.navigateByUrl('/');
+            return Promise.reject();
+        }
+        let url = api + ENDPOINTS.OBJECT_SAVE as string;
+        url = url.replace('{class}', className);
+        let method = 'put';
+        if (id === 'new') {
+            url = url.replace('/{id}', '');
+            method = 'post';
+            data.test = 1;
+            
+        } else {
+            url = url.replace('{id}', id);
+        }
+
+        return this.http.request(method, url, {body: data, ...this.getOptions()}).pipe(this.errorHandler).toPromise();
+        // return this.http.put(url, data, this.getOptions()).pipe(this.errorHandler).toPromise();
+    }
+
+    /**
+     * Deletes object
+     */
+    async deleteObject(className: string, id: string): Promise<any> {
+        const api = this.cs.getAPiUrl();
+        let url = api + ENDPOINTS.OBJECT_DELETE as string;
+        url = url.replace('{class}', className);
+        url = url.replace('{id}', id);
+        return this.http.delete(url, this.getOptions()).pipe(this.errorHandler).toPromise();
     }
 }

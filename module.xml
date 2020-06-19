@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Export generator="Cache" version="25">
-  <Document name="restforms-angular.ZPM">
+  <Document name="restforms2-ui.zpm">
     <Module>
-      <Name>restforms-angular</Name>
-      <Version>1.0.0</Version>
+      <Name>restformsui2</Name>
+      <Version>0.8.0</Version>
       <Packaging>module</Packaging>
       <SourcesRoot>src</SourcesRoot>
       <CSPApplication
-        Url="/forms-angular"
-        SourcePath="/web"
-        DeployPath="${cspdir}forms-angular"
+        Url="/restforms2-ui"
+        SourcePath="/dist"
+        DeployPath="${cspdir}restforms2-ui"
         ServeFiles="1"
         Recurse="1"
-        CookiePath="/forms-angular"
+        CookiePath="/restforms2-ui"
         UseCookies="2"
         MatchRoles=":${dbrole}"
         PasswordAuthEnabled="1"
         UnauthenticatedEnabled="0"
        />
     </Module>
-    
+
   </Document>
 </Export>

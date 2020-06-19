@@ -1,3 +1,4 @@
+@import "~@ng-select/ng-select/themes/default.theme.css";
 @import "variables";
 @import "fonts";
 @import "controls";
@@ -20,4 +21,9 @@ html, body {
 // Hidden style
 [hidden] {
     display: none !important;
+}
+
+.mat-tooltip {
+    font-family: $font;
+    font-size: 14px;
 }
