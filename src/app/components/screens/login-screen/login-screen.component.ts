@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {DataService, ILoginResponse} from '../../../services/data.service';
 import {ActivatedRoute, Router} from '@angular/router';
-import {version} from '/package.json';
+import {version} from '../../../../../package.json';
 import {FormControl} from '@angular/forms';
 import {ConfigService} from '../../../services/config.service';
 import {HeaderService} from '../../../services/header.service';
