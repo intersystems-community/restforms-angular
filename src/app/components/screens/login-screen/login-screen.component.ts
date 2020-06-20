@@ -19,8 +19,8 @@ export class LoginScreenComponent implements OnInit {
     };
 
     isLoading = false;
-    login = new FormControl('_SYSTEM');
-    password = new FormControl('SYS');
+    login = new FormControl('');
+    password = new FormControl('');
     server = new FormControl();
     path = new FormControl('forms');
 
