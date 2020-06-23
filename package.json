@@ -1,6 +1,6 @@
 {
   "name": "rest-forms-ui2",
-  "version": "0.8.0",
+  "version": "0.8.3",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config=proxy.conf.json --port 4190",
