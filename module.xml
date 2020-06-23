@@ -2,8 +2,8 @@
 <Export generator="Cache" version="25">
   <Document name="restforms2-ui.zpm">
     <Module>
-      <Name>restformsui2</Name>
-      <Version>0.8.0</Version>
+      <Name>restforms2-ui</Name>
+      <Version>0.8.1</Version>
       <Packaging>module</Packaging>
       <SourcesRoot>src</SourcesRoot>
       <CSPApplication
