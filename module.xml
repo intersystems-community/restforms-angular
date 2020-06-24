@@ -3,7 +3,7 @@
   <Document name="restforms2-ui.zpm">
     <Module>
       <Name>restforms2-ui</Name>
-      <Version>0.8.4</Version>
+      <Version>0.8.5</Version>
       <Packaging>module</Packaging>
       <SourcesRoot>src</SourcesRoot>
       <CSPApplication
