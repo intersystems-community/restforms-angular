@@ -1,10 +1,12 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {IFieldInfo, IObjectList} from '../../../services/data.service';
+import {IFieldInfo, IObjectInfo, IObjectList} from '../../../services/data.service';
 import {MatDatepicker} from '@angular/material/datepicker';
+import {animate, state, style, transition, trigger} from '@angular/animations';
 
 enum FieldType {
     // Implemented
     String = '%Library.String',
+    VarString = '%Library.VarString',
     Date = '%Library.Date',
     Numeric = '%Library.Numeric',
     Integer = '%Library.Integer',
@@ -17,16 +19,16 @@ enum FieldType {
     Serial = 'serial'
 }
 
-// %Library.BigInt,
-// %Library.SmallInt,
-// %Library.TinyInt
-// %Library.Decimal,
-// %Library.Double,
-// %Library.Float,
-// %Library.Currency,
-// %Library.VarString,
-// %Library.Char
-// %Library.DateTime,
+// * %Library.BigInt,
+// * %Library.SmallInt,
+// * %Library.TinyInt
+// * %Library.Decimal,
+// * %Library.Double,
+// * %Library.Float,
+// * %Library.Currency,
+// * %Library.VarString,
+// * %Library.Char
+// * %Library.DateTime,
 // %Library.Time,
 // %Library.PosixTime
 
@@ -34,17 +36,31 @@ class PropValidationState {
     prop: IFieldInfo;
     isValid = true;
     message = '';
-    touched = false;
 
     constructor(prop: IFieldInfo) {
         this.prop = prop;
     }
 }
 
+
 @Component({
     selector: 'rf-form',
     templateUrl: './form.component.html',
-    styleUrls: ['./form.component.scss']
+    styleUrls: ['./form.component.scss'],
+    animations: [trigger('slideToggle', [
+        state('opened', style({
+            height: '*',
+            'padding-top': '*',
+            'padding-bottom': '*'
+        })),
+        state('closed', style({
+            height: '0px',
+            'padding-top': '0px',
+            'padding-bottom': '0px',
+            'margin-bottom': '10px'
+        })),
+        transition('opened <=> closed', animate('0.1s linear'))
+    ])]
 })
 export class FormComponent implements OnInit {
 
@@ -54,9 +70,12 @@ export class FormComponent implements OnInit {
     @Input() properties: IFieldInfo[];
     @Input() data: any;
     @Input() relatedData: Map<string, IObjectList>;
+    @Input() serialInfo: Map<string, IObjectInfo>;
 
     validation = new Map<string, PropValidationState>();
     FieldType = FieldType;
+
+    formClosed: { [propName: string]: boolean } = {};
 
     constructor() {
     }
@@ -81,7 +100,26 @@ export class FormComponent implements OnInit {
 
     getPropType(prop: IFieldInfo): FieldType {
         if (prop.category.toLowerCase() === 'datatype') {
-           return prop.type as FieldType;
+            switch (prop.type) {
+                case '%Library.Char':
+                    return FieldType.String;
+                    break;
+                case '%Library.DateTime':
+                    return FieldType.TimeStamp;
+                    break;
+                case '%Library.BigInt':
+                case '%Library.SmallInt':
+                case '%Library.TinyInt':
+                    return FieldType.Integer;
+                    break;
+                case '%Library.Decimal':
+                case '%Library.Double':
+                case '%Library.Float':
+                case '%Library.Currency':
+                    return FieldType.Numeric;
+                    break;
+            }
+            return prop.type as FieldType;
         }
 
         if (prop.category === 'form') {
@@ -89,6 +127,11 @@ export class FormComponent implements OnInit {
         }
 
         if (prop.category === 'serial') {
+            // Check if we have object in data for this serial
+            // TODO: make it during data loading
+            if (!this.data[prop.name]) {
+                this.data[prop.name] = {};
+            }
             return FieldType.Serial;
         }
 
@@ -172,10 +215,18 @@ export class FormComponent implements OnInit {
         }
         const type = this.getPropType(prop);
         switch (type) {
-            case FieldType.Integer: this.validateInteger(v); break;
-            case FieldType.Numeric: this.validateNumeric(v); break;
-            case FieldType.Date: this.validateDate(v); break;
-            case FieldType.TimeStamp: this.validateDate(v, true); break;
+            case FieldType.Integer:
+                this.validateInteger(v);
+                break;
+            case FieldType.Numeric:
+                this.validateNumeric(v);
+                break;
+            case FieldType.Date:
+                this.validateDate(v);
+                break;
+            case FieldType.TimeStamp:
+                this.validateDate(v, true);
+                break;
         }
         return v;
     }
@@ -248,6 +299,12 @@ export class FormComponent implements OnInit {
         this.data[prop.name] = date + 'T' + time + 'Z';
     }
 
+    /**
+     * Track by function for properties ngFor
+     */
+    propTrackBy(index: number, prop: IFieldInfo) {
+        return prop.name;
+    }
     // onSelectKeyEnter(event, idx: number) {
     //     event.stopImmediatePropagation();
     // }

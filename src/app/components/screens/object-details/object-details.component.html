@@ -20,7 +20,16 @@
 <!--<mat-spinner [hidden]="!isLoading" diameter="60"></mat-spinner>-->
 
 <!-- Form -->
-<rf-form #form *ngIf="!isLoading" [class.disabled]="isSaving" [properties]="model?.fields" [data]="data" [relatedData]="relatedData"></rf-form>
+<rf-form
+    #form
+    *ngIf="!isLoading"
+    [class.disabled]="isSaving"
+    [properties]="model?.fields"
+    [data]="data"
+    [relatedData]="relatedData"
+    [serialInfo]="serialInfo"
+>
+</rf-form>
 
 <!-- Actions -->
 <div class="actions" *ngIf="!isLoading">

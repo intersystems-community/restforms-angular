@@ -30,6 +30,7 @@ import {MatNativeDateModule} from '@angular/material/core';
 import {NgSelectModule} from '@ng-select/ng-select';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {DefaultValueDirective} from './directives/default-value.directive';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 
 @NgModule({
     declarations: [
@@ -66,7 +67,8 @@ import {DefaultValueDirective} from './directives/default-value.directive';
         MatProgressSpinnerModule,
         MatDatepickerModule,
         NgSelectModule,
-        MatTooltipModule
+        MatTooltipModule,
+        MatCheckboxModule
     ],
     providers: [],
     bootstrap: [AppComponent]

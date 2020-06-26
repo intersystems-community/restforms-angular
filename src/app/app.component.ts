@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, HostListener} from '@angular/core';
 import {HeaderService} from './services/header.service';
 import {ErrorService, IError} from './services/error.service';
 import {ERROR_TOGGLE_ANIMATION} from './components/ui/error/error.component';
@@ -10,7 +10,7 @@ import {ERROR_TOGGLE_ANIMATION} from './components/ui/error/error.component';
     animations: [ERROR_TOGGLE_ANIMATION]
 })
 export class AppComponent {
-    title = 'RestForms';
+    title = 'RestFormsUI2';
 
     constructor(public hs: HeaderService, public es: ErrorService) {
     }
