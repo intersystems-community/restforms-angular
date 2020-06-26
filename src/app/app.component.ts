@@ -10,7 +10,7 @@ import {ERROR_TOGGLE_ANIMATION} from './components/ui/error/error.component';
     animations: [ERROR_TOGGLE_ANIMATION]
 })
 export class AppComponent {
-    title = 'RestFormsUI2';
+    title = 'RestForms2UI';
 
     constructor(public hs: HeaderService, public es: ErrorService) {
     }
