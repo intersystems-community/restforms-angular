@@ -9,6 +9,7 @@
 .prop-label {
     display: flex;
     justify-content: flex-start;
+    align-items: center;
 }
 
 .error {
@@ -20,7 +21,7 @@
     cursor: pointer;
     //flex-shrink: 1;
     height: 0;
-    margin-top: -3px;
+    margin-top: -25px;
     /* position: absolute; */
     //left: -22px;
     //top: 34px;
@@ -41,7 +42,7 @@
 
 input {
     font-size: 16px;
-    color: black;
+    color: var(--cl-txt-main);
     height: 36px;
 }
 
@@ -71,14 +72,113 @@ mat-form-field {
     background-color: transparent;
     box-shadow: none;
     color: var(--cl-txt);
+
+    & > mat-icon {
+        margin: 0;
+    }
 }
 
 .btn-date {
     position: absolute;
     bottom: 0;
-    left: 118px;
+    left: 110px;
 }
 
+// Select style
 ng-select {
+    display: inline-block;
     width: 50%;
 }
+
+// Expand button for serial type
+.btn-expand {
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: transform $animSpeed linear;
+    &.closed {
+        transform: scaleY(-1);
+    }
+}
+
+// Forms inside serial fields
+.prop-serial {
+    & > .prop-label > label {
+        cursor: pointer;
+        user-select: none;
+    }
+    margin-left: -10px;
+    margin-bottom: 0;
+    width: calc(100% + 10px);
+    & rf-form {
+        overflow: hidden;
+        width: calc(100% - 16px);
+        margin-top: 0;
+        margin-left: 16px;
+        margin-bottom: 20px;
+        padding-left: 25px;
+        padding-bottom: 10px;
+        padding-top: 10px;
+        border-left: 1px solid #7c7c7c;
+        position: relative;
+        &::after {
+            display: block;
+            content: " ";
+            width: 20px;
+            border-bottom: 1px solid #7c7c7c;
+            left: 0;
+            bottom: 0;
+            position: absolute;
+        }
+
+    }
+}
+
+// Make textarea use "rows" to calc height
+textarea {
+    height: auto;
+    font-size: 16px;
+    color: var(--cl-txt-main);
+    &:focus {
+        margin-bottom: -1px;
+    }
+}
+
+// Link button for object fields
+.btn-link {
+    color: var(--cl-txt);
+    width: 36px;
+    height: 36px;
+    text-decoration: none;
+    border: none;
+    opacity: 0.6;
+    background-color: transparent;
+    justify-content: center;
+    align-items: center;
+    margin-left: 4px;
+    vertical-align: top;
+    display: inline-flex;
+
+    & > mat-icon {
+        width: auto;
+        height: auto;
+        font-size: 32px;
+        transform: scaleX(-1) translateY(-3px);
+    }
+}
+
+//.badge {
+//    position: absolute;
+//    right: 8px;
+//    top: 29px;
+//    background-color: #c5bdbd;
+//    color: white;
+//    padding: 2px;
+//    padding-left: 4px;
+//    padding-right: 4px;
+//    border-radius: 4px;
+//    font-size: 14px;
+//    font-weight: 400;
+//}

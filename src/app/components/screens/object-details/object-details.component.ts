@@ -1,5 +1,5 @@
 import {ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {DataService, ENDPOINTS, IObjectInfo, IObjectList} from '../../../services/data.service';
+import {DataService, ENDPOINTS, IFieldInfo, IObjectInfo, IObjectList} from '../../../services/data.service';
 import {Subscription} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
 import {FormComponent} from '../../ui/form/form.component';
@@ -24,6 +24,8 @@ export class ObjectDetailsComponent implements OnInit, OnDestroy {
     data: any;
     // Related forms data, stores all forms data if some fields has form type
     relatedData = new Map<string, IObjectList>();
+    // List of all clsses info for serial fields
+    serialInfo = new Map<string, IObjectInfo>();
     // Route params
     params: { [key: string]: string };
 
@@ -63,7 +65,7 @@ export class ObjectDetailsComponent implements OnInit, OnDestroy {
             // Request form information
             this.ds.formInfo(this.params.class).then(d => {
                 this.model = d;
-                return this.requestRelatedFormsData();
+                return this.requestRelatedFormsDataAndSerialClasses();
             }),
             // Request form data if not new
             this.params.id === 'new'
@@ -75,25 +77,59 @@ export class ObjectDetailsComponent implements OnInit, OnDestroy {
             });
     }
 
+    loadRelatedDataAndSerialClasses(field: IFieldInfo, requested: string[]): Promise<any> {
+        return new Promise((res, rej) => {
+            // Request data for form
+            if (field.category.toLowerCase() === 'form') {
+                if (requested.indexOf(field.type + 'D') === -1) {
+                    requested.push(field.type + 'D');
+                    const url = ENDPOINTS.OBJECTS_LIST.replace('{class}', field.type).replace('{query}', 'info');
+                    this.ds
+                        .get(url)
+                        .toPromise()
+                        .then(data => {
+                            this.relatedData.set(field.type, data);
+                            res();
+                        });
+                }
+            }
+            // Request class info for serial
+            if (field.category.toLowerCase() === 'serial') {
+                if (requested.indexOf(field.type + 'I') === -1) {
+                    requested.push(field.type + 'I');
+                    const url = ENDPOINTS.FORM_INFO.replace('{class}', field.type);
+                    return this.ds
+                        .get(url)
+                        .toPromise()
+                        .then((data: IObjectInfo) => {
+                            this.serialInfo.set(field.type, data);
+                            const promises = [];
+                            data.fields.forEach(f => {
+                                promises.push(this.loadRelatedDataAndSerialClasses(f, requested));
+                            });
+                            return Promise.all(promises);
+                        })
+                        .then(() => res());
+                }
+            }
+            res();
+        });
+    }
+
     /**
      * Requests all forms information if some fields has form type
+     * also requests all class information for serial fields type
      */
-    async requestRelatedFormsData() {
+    async requestRelatedFormsDataAndSerialClasses() {
         this.relatedData = new Map<string, IObjectList>();
+        this.serialInfo = new Map<string, IObjectInfo>();
         const requested = [];
         const promises = [];
 
         // Iterate through all fields and request data if type of field is 'form' and it wasn't already requested
         this.model.fields.forEach(f => {
-            if (f.category.toLowerCase() === 'form') {
-                if (requested.indexOf(f.type) === -1) {
-                    requested.push(f.type);
-                    const p = this.ds.get(ENDPOINTS.OBJECTS_LIST.replace('{class}', f.type).replace('{query}', 'info'))
-                        .toPromise()
-                        .then(data => this.relatedData.set(f.type, data));
-                    promises.push(p);
-                }
-            }
+            const p = this.loadRelatedDataAndSerialClasses(f, requested);
+            promises.push(p);
         });
 
         // If there is no promises - resolve immediately
@@ -111,7 +147,6 @@ export class ObjectDetailsComponent implements OnInit, OnDestroy {
         if (!this.form.validateAll()) {
             return;
         }
-        console.log(this.data);
         // TODO: show success message
         this.isSaving = true;
 

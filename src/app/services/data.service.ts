@@ -5,6 +5,7 @@ import {ConfigService} from './config.service';
 import {Router} from '@angular/router';
 import {catchError, map} from 'rxjs/operators';
 import {ErrorService} from './error.service';
+import {MockDataService, USE_MOCK} from './mock-data.service';
 
 // Field information
 export interface IFieldInfo {
@@ -15,6 +16,8 @@ export interface IFieldInfo {
     maxlen: string;
     required: number;
     category: string;
+    // temp
+    expanded: boolean;
 }
 
 // Object information
@@ -57,7 +60,8 @@ export interface IObjectList {
 export const enum ENDPOINTS {
     TEST = 'test',
     FORMS_LIST = 'form/info',
-    OBJECTS_LIST = 'form/objects/{class}/{query}',
+    FORM_INFO = 'form/info/{class}',
+    OBJECTS_LIST = 'form/objects/{class}/{query}?size=1000000', // TODO: make server side pagination
     OBJECT_SAVE = 'form/object/{class}/{id}',
     OBJECT_DELETE = 'form/object/{class}/{id}'
 }
@@ -72,13 +76,18 @@ export class DataService {
             void this.router.navigateByUrl('login');
             return of();
         }
-        this.es.show(err.message);
+        if (err?.error?.summary) {
+            this.es.show(err?.error?.summary);
+        } else {
+            this.es.show(err.message);
+        }
         throw err;
     });
 
     constructor(private http: HttpClient,
                 private cs: ConfigService,
                 private es: ErrorService,
+                private md: MockDataService,
                 private router: Router) {
     }
 
@@ -91,6 +100,12 @@ export class DataService {
             void this.router.navigateByUrl('/');
             return;
         }
+        if (USE_MOCK) {
+            if (this.md.hasData(url)) {
+                return this.md.getData(url);
+            }
+        }
+
         return this.http.get(api + url, this.getOptions()).pipe(this.errorHandler);
     }
 
@@ -144,7 +159,7 @@ export class DataService {
      * Returns list of forms
      */
     formInfo(className: string) {
-        return this.get('form/info/' + className).toPromise();
+        return this.get(ENDPOINTS.FORM_INFO.replace('{class}', className)).toPromise();
     }
 
     /**
@@ -166,8 +181,6 @@ export class DataService {
         if (id === 'new') {
             url = url.replace('/{id}', '');
             method = 'post';
-            data.test = 1;
-            
         } else {
             url = url.replace('{id}', id);
         }

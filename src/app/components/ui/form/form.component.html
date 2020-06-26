@@ -1,7 +1,14 @@
-<div class="prop-container" *ngFor="let prop of properties; let idx = index">
+<div class="prop-container" [class.prop-serial]="prop.category === 'serial'"
+     *ngFor="let prop of properties; let idx = index; trackBy: propTrackBy"
+     [attr.data-type]="getPropType(prop)"
+>
 
     <!-- Property label -->
     <div class="prop-label">
+        <!-- Expand button -->
+        <button class="btn-icon btn-expand" [class.closed]="formClosed[prop.name]" *ngIf="prop.category==='serial'" (click)="formClosed[prop.name] = !formClosed[prop.name]">
+            <mat-icon>expand_more</mat-icon>
+        </button>
         <!-- Validation icon -->
         <span
             [hidden]="validation.get(prop.name).isValid"
@@ -11,11 +18,23 @@
             <mat-icon>warning</mat-icon>
         </span>
         <!-- Text -->
-        <label>{{prop.displayName}}{{!!prop.required ? '*': ''}}</label>
+        <label (click)="prop.category === 'serial' ? formClosed[prop.name] = !formClosed[prop.name] : ''">{{prop.displayName}}{{!!prop.required ? '*' : ''}}</label>
     </div>
 
     <!-- Property container -->
     <ng-container [ngSwitch]="getPropType(prop)">
+        <!-- Boolean -->
+        <ng-container *ngSwitchCase="FieldType.Boolean">
+            <mat-checkbox
+                type="text"
+                [id]="'prop' + idx"
+                [class.invalid]="!validation.get(prop.name).isValid"
+                [(ngModel)]="data[prop.name]"
+                [rfFocusNext]="'prop' + (idx + 1)"
+                (change)="validate(prop)"
+            ></mat-checkbox>
+        </ng-container>
+
         <!-- String -->
         <ng-container *ngSwitchCase="FieldType.String">
             <input
@@ -28,6 +47,23 @@
                 (keyup)="validate(prop)"
                 (change)="validate(prop)"
             >
+<!--            <span class="badge">txt</span>-->
+        </ng-container>
+
+        <!-- VarString -->
+        <ng-container *ngSwitchCase="FieldType.VarString">
+            <textarea
+                type="text"
+                rows="6"
+                [id]="'prop' + idx"
+                [class.invalid]="!validation.get(prop.name).isValid"
+                [(ngModel)]="data[prop.name]"
+                [maxlength]="prop.maxlen"
+                [rfFocusNext]="'prop' + (idx + 1)"
+                (keyup)="validate(prop)"
+                (change)="validate(prop)"
+            ></textarea>
+<!--            <span class="badge">txt</span>-->
         </ng-container>
 
         <!-- Numeric -->
@@ -44,10 +80,11 @@
                 (change)="validate(prop)"
             >
             <!-- TODO: add input actions for number field -->
-<!--            <div calss="input-actions">-->
-<!--                <button class="btn btn-icon"><mat-icon>expand_less</mat-icon></button>-->
-<!--                <button class="btn btn-icon"><mat-icon>expand_more</mat-icon></button>-->
-<!--            </div>-->
+            <!--            <div calss="input-actions">-->
+            <!--                <button class="btn btn-icon"><mat-icon>expand_less</mat-icon></button>-->
+            <!--                <button class="btn btn-icon"><mat-icon>expand_more</mat-icon></button>-->
+            <!--            </div>-->
+<!--            <span class="badge">#.#</span>-->
         </ng-container>
 
         <!-- Integer -->
@@ -63,15 +100,17 @@
                 (keyup)="validate(prop)"
                 (change)="validate(prop)"
             >
+<!--            <span class="badge">#</span>-->
         </ng-container>
 
         <!-- Date -->
         <div class="prop" *ngSwitchCase="FieldType.Date">
             <mat-form-field>
                 <!-- TODO: make datepicker show initial date as selected -->
-                <input matInput (dateChange)="onDateChange(prop, $event.value)" [value]="data[prop.name]" [matDatepicker]="picker" [required]="!!prop.required">
-                    <mat-datepicker #picker [startAt]="dateFromString(data[prop.name])"></mat-datepicker>
-                </mat-form-field>
+                <input matInput (dateChange)="onDateChange(prop, $event.value)" [value]="data[prop.name]"
+                       [matDatepicker]="picker" [required]="!!prop.required">
+                <mat-datepicker #picker [startAt]="dateFromString(data[prop.name])"></mat-datepicker>
+            </mat-form-field>
             <input
                 #inp
                 class="input-date"
@@ -87,14 +126,17 @@
                 (keyup)="validate(prop)"
                 (change)="validate(prop)"
                 pattern="">
-            <button class="btn btn-icon btn-date" (click)="openDatePicker(picker, inp)" ><mat-icon>calendar_today</mat-icon></button>
+            <button class="btn btn-icon btn-date" (click)="openDatePicker(picker, inp)">
+                <mat-icon>today</mat-icon>
+            </button>
         </div>
 
         <!-- Timestamp -->
-        <div class="prop"  *ngSwitchCase="FieldType.TimeStamp">
+        <div class="prop" *ngSwitchCase="FieldType.TimeStamp">
             <mat-form-field>
                 <!-- TODO: make datepicker show initial date as selected -->
-                <input matInput (dateChange)="onDateChange(prop, $event.value, true)" [value]="data[prop.name]" [matDatepicker]="picker" [required]="!!prop.required">
+                <input matInput (dateChange)="onDateChange(prop, $event.value, true)" [value]="data[prop.name]"
+                       [matDatepicker]="picker" [required]="!!prop.required">
                 <mat-datepicker #picker [startAt]="dateFromString(data[prop.name])"></mat-datepicker>
             </mat-form-field>
             <input
@@ -112,7 +154,9 @@
                 (keyup)="changeTimestamp(prop, inp, inpTime); validate(prop)"
                 (change)="changeTimestamp(prop, inp, inpTime); validate(prop)"
                 pattern="">
-            <button class="btn btn-icon btn-date" (click)="openDatePicker(picker, inp)" ><mat-icon>calendar_today</mat-icon></button>
+            <button class="btn btn-icon btn-date" (click)="openDatePicker(picker, inp)">
+                <mat-icon>today</mat-icon>
+            </button>
             <!-- Time input -->
             <input
                 #inpTime
@@ -139,11 +183,24 @@
                 bindLabel="displayName"
                 (change)="validate(prop)"
             ></ng-select>
+            <a
+                [routerLink]="'/object/' + prop.type + '/' + data[prop.name]"
+                class="btn-link"
+                [hidden]="!data[prop.name]"
+                matTooltip="Navigate to object"
+                matTooltipPosition="right"
+            ><mat-icon>reply</mat-icon></a>
         </ng-container>
 
-        <!-- TODO: add serial type field -->
+        <!-- Serial -->
         <ng-container *ngSwitchCase="FieldType.Serial">
-            <input type="text" disabled placeholder="Not supported yet">
+            <rf-form
+                [@slideToggle]="formClosed[prop.name] ? 'closed': 'opened'"
+                [properties]="serialInfo?.get(prop.type)?.fields"
+                [data]="data[prop.name]"
+                [relatedData]="relatedData"
+                [serialInfo]="serialInfo">
+            </rf-form>
         </ng-container>
 
         <!-- TODO: add array type field -->

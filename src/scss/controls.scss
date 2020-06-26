@@ -40,6 +40,17 @@ input, textarea, select, ng-select > .ng-select-container {
         font-family: $font;
     }
 }
+textarea {
+    font-family: $font;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    &:focus {
+        padding: 1px 12px 0;
+        padding-top: 8px;
+        padding-bottom: 7px;
+    }
+}
+
 input[type=checkbox] {
     margin: 0;
     width: $inputHeight;
@@ -185,4 +196,25 @@ ng-select.ng-select-focused > .ng-select-container  {
 
 .ng-select.ng-select-opened>.ng-select-container {
     border: 2px solid var(--cl-accent);
+}
+
+// Fix material checkbox
+mat-checkbox, .mat-checkbox-inner-container {
+    width: 30px !important;
+    height: 30px !important;
+}
+// Frame border
+.mat-checkbox-frame {
+    border: 1px solid #ccc !important;
+}
+.mat-checkbox-background {
+    border-radius: 4px !important;
+}
+// Animation circle
+.mat-checkbox-checked:not(.mat-checkbox-disabled).mat-accent .mat-ripple-element, .mat-checkbox:active:not(.mat-checkbox-disabled).mat-accent .mat-ripple-element {
+    background-color: #ccc !important;
+}
+// Checked background
+.mat-checkbox-indeterminate.mat-accent .mat-checkbox-background, .mat-checkbox-checked.mat-accent .mat-checkbox-background {
+    background-color: #ccc !important;
 }
