@@ -66,18 +66,6 @@ mat-form-field {
     width: 100px;
 }
 
-// Button with icon for datepicker, etc.
-.btn-icon {
-    border: none;
-    background-color: transparent;
-    box-shadow: none;
-    color: var(--cl-txt);
-
-    & > mat-icon {
-        margin: 0;
-    }
-}
-
 .btn-date {
     position: absolute;
     bottom: 0;
@@ -85,10 +73,11 @@ mat-form-field {
 }
 
 // Select style
-ng-select {
+ng-select:not(.multiple) {
     display: inline-block;
     width: 50%;
 }
+
 
 // Expand button for serial type
 .btn-expand {
@@ -104,7 +93,7 @@ ng-select {
 }
 
 // Forms inside serial fields
-.prop-serial {
+.prop-serial, .prop-expandable {
     & > .prop-label > label {
         cursor: pointer;
         user-select: none;
@@ -112,8 +101,8 @@ ng-select {
     margin-left: -10px;
     margin-bottom: 0;
     width: calc(100% + 10px);
-    & rf-form {
-        overflow: hidden;
+    & rf-form, & rf-array {
+        // overflow: hidden;
         width: calc(100% - 16px);
         margin-top: 0;
         margin-left: 16px;

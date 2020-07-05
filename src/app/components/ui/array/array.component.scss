@@ -1,0 +1,119 @@
+@import "src/scss/variables";
+:host {
+    display: block;
+    overflow: visible;
+}
+
+.item {
+    display: flex;
+    margin-bottom: 4px;
+    // Key input
+    & > input {
+        width: 100px;
+        margin-right: 4px;
+        height: 36px;
+    }
+
+    // Selector of value
+    & > ng-select {
+        width: 60%;
+    }
+
+    &:last-child {
+        margin-bottom: 10px
+    }
+
+    // Delete button
+    & > .btn-del {
+        display: none;
+        opacity: 0.7;
+        width: 36px;
+        padding: 0;
+        justify-content: center
+
+        //& > mat-icon {
+        //    font-size: 32px;
+        //}
+    }
+}
+// Show delete button on row hover, but not for dragging
+.cdk-drop-list:not(.cdk-drop-list-dragging) {
+    & > .item:hover > .btn-del {
+        display: flex;
+    }
+}
+
+.cdk-drop-list.cdk-drop-list-dragging {
+    //& > .item:not(.cdk-drag-placeholder) {
+    //    opacity: 0.6;
+    //}
+}
+
+// TODO: refactor and make one style for all btn-links
+// Link button for object fields
+.btn-link {
+    color: var(--cl-txt);
+    width: 36px;
+    height: 36px;
+    text-decoration: none;
+    border: none;
+    opacity: 0.6;
+    background-color: transparent;
+    justify-content: center;
+    align-items: center;
+    margin-left: 4px;
+    vertical-align: top;
+    display: inline-flex;
+
+    & > mat-icon {
+        width: auto;
+        height: auto;
+        font-size: 32px;
+        transform: scaleX(-1) translateY(-3px);
+    }
+}
+
+// Add button
+.btn-add {
+    min-width: 100px;
+    margin-top: 4px;
+    margin-bottom: 10px;
+}
+
+// Drag handle for reordering
+.drag-handle {
+    width: 32px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0.6;
+    cursor: grab;
+    margin-left: -31px;
+    transform: translateX(4px) translateY(-2px);
+    & > img {
+        width: 18px;
+    }
+}
+
+.cdk-drag-preview {
+    box-sizing: border-box;
+    // border-radius: 4px;
+    // box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+    // 0 8px 10px 1px rgba(0, 0, 0, 0.14),
+    // 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.cdk-drag-placeholder {
+    opacity: 0;
+}
+
+.cdk-drag-animating {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+                // opacity 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+*.cdk-drop-list-dragging .item:not(.cdk-drag-placeholder) {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+                // opacity 250ms cubic-bezier(0, 0, 0.2, 1);
+}

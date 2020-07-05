@@ -1,0 +1,18 @@
+:host {
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+}
+
+// Input with object name
+input {
+    height: 36px;
+    cursor: pointer;
+}
+
+// Dots icon
+mat-icon {
+    opacity: 0.5;
+    margin-left: -30px;
+    user-select: none;
+}

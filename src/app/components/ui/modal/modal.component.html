@@ -1,0 +1,25 @@
+<div class="modal">
+
+    <!-- Title -->
+    <div class="title">
+        {{data.title}}
+    </div>
+
+    <!-- Main content -->
+    <div class="content">
+        {{data.message}}
+    </div>
+
+    <!-- footer with buttons -->
+    <div class="footer">
+        <button
+            class="btn"
+            *ngFor="let btn of data.buttons"
+            [class.btn-success]="btn.default"
+            [class.btn-text]="!btn.default"
+            (click)="onButtonClick(btn)"
+        >
+            {{btn.label}}
+        </button>
+    </div>
+</div>

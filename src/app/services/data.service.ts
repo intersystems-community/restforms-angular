@@ -16,8 +16,7 @@ export interface IFieldInfo {
     maxlen: string;
     required: number;
     category: string;
-    // temp
-    expanded: boolean;
+    jsonreference: string;
 }
 
 // Object information

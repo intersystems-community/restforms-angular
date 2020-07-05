@@ -1,9 +1,11 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnInit, QueryList, ViewChildren} from '@angular/core';
 import {IFieldInfo, IObjectInfo, IObjectList} from '../../../services/data.service';
 import {MatDatepicker} from '@angular/material/datepicker';
 import {animate, state, style, transition, trigger} from '@angular/animations';
+import {BaseDataEditor} from '../../../classes/BaseDataEditor';
+import {ValidationService} from '../../../services/validation.service';
 
-enum FieldType {
+export enum FieldType {
     // Implemented
     String = '%Library.String',
     VarString = '%Library.VarString',
@@ -11,12 +13,13 @@ enum FieldType {
     Numeric = '%Library.Numeric',
     Integer = '%Library.Integer',
     TimeStamp = '%Library.TimeStamp',
+    Boolean = '%Library.Boolean',
+    Serial = 'serial',
     Form = 'form',
 
     // Not implemented
-    Boolean = '%Library.Boolean',
-    Array = 'array',
-    Serial = 'serial'
+    List = 'list',
+    Array = 'array'
 }
 
 // * %Library.BigInt,
@@ -32,17 +35,6 @@ enum FieldType {
 // %Library.Time,
 // %Library.PosixTime
 
-class PropValidationState {
-    prop: IFieldInfo;
-    isValid = true;
-    message = '';
-
-    constructor(prop: IFieldInfo) {
-        this.prop = prop;
-    }
-}
-
-
 @Component({
     selector: 'rf-form',
     templateUrl: './form.component.html',
@@ -51,54 +43,82 @@ class PropValidationState {
         state('opened', style({
             height: '*',
             'padding-top': '*',
-            'padding-bottom': '*'
+            'padding-bottom': '*',
+            overflow: 'visible'
         })),
         state('closed', style({
             height: '0px',
             'padding-top': '0px',
             'padding-bottom': '0px',
-            'margin-bottom': '10px'
+            'margin-bottom': '10px',
+            overflow: 'hidden'
         })),
         transition('opened <=> closed', animate('0.1s linear'))
     ])]
 })
-export class FormComponent implements OnInit {
+export class FormComponent extends BaseDataEditor implements OnInit {
+    @ViewChildren('editor') private editors: QueryList<BaseDataEditor>;
 
     private int = new Intl.DateTimeFormat('en', {year: 'numeric', month: '2-digit', day: '2-digit'});
     private pickerOpening = false;
 
     @Input() properties: IFieldInfo[];
     @Input() data: any;
-    @Input() relatedData: Map<string, IObjectList>;
-    @Input() serialInfo: Map<string, IObjectInfo>;
+    @Input() relatedData: { [key: string]: IObjectList };
+    @Input() serialInfo: { [key: string]: IObjectInfo };
 
-    validation = new Map<string, PropValidationState>();
     FieldType = FieldType;
 
     formClosed: { [propName: string]: boolean } = {};
+    compareObjects: any;
 
-    constructor() {
+    constructor(public vs: ValidationService) {
+        super(vs);
+        this.compareObjects = (a, b) => {
+            return this.isEqual(a, b);
+        };
     }
 
     ngOnInit() {
-        // this.properties.forEach(p => p.required = 1);
+        super.ngOnInit();
         this.initPropValidation();
     }
 
+    protected prepareData() {
+    }
+
+    /**
+     * Gets data for saving from complex editors
+     */
+    getDataForSaving(): any {
+        const result = JSON.parse(JSON.stringify(this.data));
+        this.editors.toArray().forEach((e: BaseDataEditor) => {
+            result[e.prop.name] = e.getDataForSaving();
+        });
+        return result;
+    }
 
     /**
      * Initializes validation state for all properties
      */
     private initPropValidation() {
-        if (!this.properties) {
-            return;
-        }
-        this.properties.forEach(p => {
-            this.validation.set(p.name, new PropValidationState(p));
-        });
+        this.vs.addProperties(this.properties);
     }
 
+    /**
+     * Returns property type
+     */
     getPropType(prop: IFieldInfo): FieldType {
+        switch (prop.collection) {
+            case 'array': {
+                return prop.jsonreference === 'ID' ? FieldType.List : FieldType.Array;
+                break;
+            }
+            case 'list':
+                return FieldType.List;
+                break;
+        }
+
         if (prop.category.toLowerCase() === 'datatype') {
             switch (prop.type) {
                 case '%Library.Char':
@@ -123,7 +143,7 @@ export class FormComponent implements OnInit {
         }
 
         if (prop.category === 'form') {
-            return prop.collection.toLowerCase() === 'array' ? FieldType.Array : FieldType.Form;
+            return FieldType.Form;
         }
 
         if (prop.category === 'serial') {
@@ -138,6 +158,9 @@ export class FormComponent implements OnInit {
         return FieldType.String;
     }
 
+    /**
+     * Opens date picker
+     */
     openDatePicker(picker: MatDatepicker<any>, input: HTMLInputElement) {
         if (picker.opened) {
             return;
@@ -148,19 +171,9 @@ export class FormComponent implements OnInit {
         }
     }
 
-    // showDatePicker(picker: MatDatepicker<any>|NgxMatDatetimePicker<any>, inp: HTMLInputElement) {
-    //     if (this.pickerOpening) {
-    //         return;
-    //     }
-    //     this.pickerOpening = true;
-    //     console.log('focus');
-    //     picker.open();
-    //     setTimeout(() => {
-    //         inp.focus();
-    //         this.pickerOpening = false;
-    //     }, 100);
-    // }
-
+    /**
+     * Date changing callback
+     */
     onDateChange(prop: IFieldInfo, value: any, saveTime = false) {
         const [{value: month}, , {value: day}, , {value: year}] = this.int.formatToParts(value);
         let v = `${year}-${month}-${day}`;
@@ -172,111 +185,46 @@ export class FormComponent implements OnInit {
         }
 
         this.data[prop.name] = v;
-        this.validate(prop);
+        this.vs.validate(prop);
     }
 
+    /**
+     * Hides date picker
+     */
     hidePicker(picker: MatDatepicker<any>) {
-        // if (this.pickerOpening) {
-        //     return;
-        // }
-        // console.log('blur');
         picker.opened = false;
     }
 
+    /**
+     * Returns date from string
+     */
     dateFromString(s: string): Date {
         return new Date(s);
     }
 
+    /**
+     * Validate all controls
+     */
     validateAll(): boolean {
         let valid = true;
         this.properties.forEach(p => {
-            const v = this.validate(p);
+            const v = this.vs.validate(p);
             if (!v.isValid) {
                 valid = false;
             }
         });
+
+        // Validate complex editors
+        this.editors.toArray().forEach((e: BaseDataEditor) => {
+            const isValid = e.validateAll();
+            if (!isValid) {
+                valid = false;
+            }
+        });
+
         return valid;
     }
 
-    validate(prop: IFieldInfo): PropValidationState {
-        const v = this.validation.get(prop.name);
-        v.isValid = true;
-        v.message = '';
-        if (prop.required === 1) {
-            if (!this.data[prop.name]) {
-                v.isValid = false;
-                v.message = 'This field is required';
-            }
-        } else {
-            const value = this.data[v.prop.name];
-            if (value === '' || value === undefined || value === null) {
-                return v;
-            }
-        }
-        const type = this.getPropType(prop);
-        switch (type) {
-            case FieldType.Integer:
-                this.validateInteger(v);
-                break;
-            case FieldType.Numeric:
-                this.validateNumeric(v);
-                break;
-            case FieldType.Date:
-                this.validateDate(v);
-                break;
-            case FieldType.TimeStamp:
-                this.validateDate(v, true);
-                break;
-        }
-        return v;
-    }
-
-    private validateInteger(v: PropValidationState) {
-        const value = this.data[v.prop.name];
-        if (isNaN(+value) || !/^\d+$/.test(value)) {
-            v.isValid = false;
-            v.message = 'Please enter valid integer number';
-        }
-    }
-
-    private validateNumeric(v: PropValidationState) {
-        const value = this.data[v.prop.name];
-        if (isNaN(+value) || !/^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$/.test(value)) {
-            v.isValid = false;
-            v.message = 'Please enter valid number';
-        }
-    }
-
-    private validateDate(v: PropValidationState, validateTime = false) {
-        let value = this.data[v.prop.name];
-        let time = '';
-        if (validateTime) {
-            time = value.split('T')[1]?.replace('Z', '').split('.')[0];
-            value = value.split('T')[0];
-        }
-        if (!/^\d{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$/.test(value)) {
-            v.isValid = false;
-            v.message = 'Please enter a valid date in format "yyyy-mm-dd"';
-        }
-
-        if (validateTime) {
-            if (!/^(?:2[0-3]|[01]?[0-9]):[0-5][0-9]:[0-5][0-9]$/.test(time)) {
-                v.isValid = false;
-                v.message = 'Please enter a valid time in format "hh:mm:ss"';
-            }
-            // /^(?:2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9]$/
-            // for 24-hour time, leading zeroes mandatory.
-            //
-            // /^(?:2[0-3]|[01]?[0-9]):[0-5][0-9]:[0-5][0-9]$/
-            // for 24-hour time, leading zeroes optional.
-            //
-            // /^(?:1[0-2]|0[0-9]):[0-5][0-9]:[0-5][0-9]$/
-            // for 12-hour time, leading zeroes mandatory.
-            //
-            // /^(?:1[0-2]|0?[0-9]):[0-5][0-9]:[0-5][0-9]$/
-            // for 12-hour time, leading zeroes optional.
-        }
-    }
 
     /**
      * Returns time part of date string
@@ -293,10 +241,20 @@ export class FormComponent implements OnInit {
         return '';
     }
 
+    /**
+     * Changes time for datetime field. Used after date selection to save previous time
+     */
     changeTimestamp(prop: IFieldInfo, inp: HTMLInputElement, inpTime: HTMLInputElement) {
         const date = inp.value;
         const time = inpTime.value;
         this.data[prop.name] = date + 'T' + time + 'Z';
+    }
+
+    /**
+     * If property expandable or not
+     */
+    isExpandable(prop: IFieldInfo): boolean {
+        return prop?.category === 'serial' || this.getPropType(prop) === FieldType.Array;
     }
 
     /**
@@ -305,7 +263,63 @@ export class FormComponent implements OnInit {
     propTrackBy(index: number, prop: IFieldInfo) {
         return prop.name;
     }
-    // onSelectKeyEnter(event, idx: number) {
-    //     event.stopImmediatePropagation();
-    // }
+
+    /**
+     * Compare items for ng-select with objects
+     */
+    private _compareObjects(a: any, b: any) {
+        if (typeof a === 'object') {
+            return this.isObjectIncludesAllFieldsWithValues(a, b);
+        } else {
+            return a === b;
+        }
+    }
+
+    /**
+     * Checks if object A include all fields from object B with same values
+     */
+    private isObjectIncludesAllFieldsWithValues(a: any, b: any): boolean {
+        for (const p in b) {
+            if (!b.hasOwnProperty(p)) {
+                continue;
+            }
+            if (!a.hasOwnProperty(p)) {
+                return false;
+            }
+            const equal = this.isEqual(a[p], b[p]);
+            if (!equal) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks if arrays are equal
+     */
+    private isArraysEqual(a: any[], b: any[]): boolean {
+        if (a.length !== b.length) {
+            return false;
+        }
+        for (let i = 0; i < a.length; i++) {
+            const equal = this.isEqual(a[i], b[i]);
+            if (!equal) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Checks if two objects are equal
+     */
+    private isEqual(a: any, b: any): boolean {
+        if (Array.isArray(a)) {
+            return this.isArraysEqual(a, b);
+        }
+        if (typeof a === 'object') {
+            return this.isObjectIncludesAllFieldsWithValues(a, b);
+        }
+        return a === b;
+    }
 }

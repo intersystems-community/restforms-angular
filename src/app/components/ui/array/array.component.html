@@ -1,0 +1,65 @@
+<!-- Container for drag reordering-->
+<div cdkDropList cdkDropListLockAxis="y" cdkDropListOrientation="vertical" [cdkDropListData]="preparedData"
+     (cdkDropListDropped)="onReorderDrop($event)">
+
+    <!-- Items -->
+    <div cdkDrag class="item" *ngFor="let item of preparedData; trackBy: trackByFn; let idx = index">
+
+        <!-- Drag handle -->
+        <div cdkDragHandle class="drag-handle"><img src="assets/drag_indicator.svg"></div>
+<!--        <div cdkDragHandle class="drag-handle"><mat-icon>drag_handle</mat-icon></div>-->
+
+        <!-- Key input -->
+        <input
+            type="text"
+            [(ngModel)]="item.key"
+            [class.invalid-force]="!vs.get(prop).isValid && vs.get(prop).index === item.key"
+        >
+
+        <!-- Value select -->
+        <ng-container [ngSwitch]="prop.category">
+            <!-- Simple type -->
+            <ng-container *ngSwitchCase="'datatype'">
+                <input type="text" [(ngModel)]="item.data">
+            </ng-container>
+
+            <!-- Form type -->
+            <ng-container *ngSwitchCase="'form'">
+                <ng-select
+                    #sel
+                    [class.invalid-force]="!vs.get(prop).isValid && (vs.get(prop).index === item.key + 'select')"
+                    [id]="'prop' + idx"
+                    [(ngModel)]="item.data"
+                    [items]="relatedData[prop?.type]"
+                    [bindLabel]="prop.jsonreference === 'ID' ? '' : serialInfo[prop.type]?.displayProperty"
+                ></ng-select>
+                <!-- Navigate to object -->
+                <a
+                    [routerLink]="'/object/' + prop?.type + '/' + sel.selectedValues[0]['ID']"
+                    class="btn-link"
+                    *ngIf="sel.selectedValues.length"
+                    matTooltip="Navigate to object"
+                    matTooltipPosition="below"
+                >
+                    <mat-icon>reply</mat-icon>
+                </a>
+            </ng-container>
+        </ng-container>
+
+        <!-- Delete button -->
+        <button
+            class="btn btn-icon btn-del"
+            matTooltip="Delete"
+            matTooltipPosition="below"
+            (click)="delete(idx)"
+        >
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <!-- Add button -->
+    <button class="btn btn-success btn-add" (click)="onAddClick()">
+        <mat-icon>add</mat-icon>
+        Add
+    </button>
+</div>

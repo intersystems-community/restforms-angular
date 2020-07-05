@@ -1,24 +1,32 @@
-<div class="prop-container" [class.prop-serial]="prop.category === 'serial'"
+<!-- TODO: check serial -->
+<div class="prop-container"
+     [class.prop-expandable]="isExpandable(prop)"
      *ngFor="let prop of properties; let idx = index; trackBy: propTrackBy"
      [attr.data-type]="getPropType(prop)"
 >
-
     <!-- Property label -->
     <div class="prop-label">
         <!-- Expand button -->
-        <button class="btn-icon btn-expand" [class.closed]="formClosed[prop.name]" *ngIf="prop.category==='serial'" (click)="formClosed[prop.name] = !formClosed[prop.name]">
+        <button
+            class="btn-icon btn-expand"
+            *ngIf="isExpandable(prop)"
+            [class.closed]="formClosed[prop.name]"
+            (click)="formClosed[prop.name] = !formClosed[prop.name]"
+        >
             <mat-icon>expand_more</mat-icon>
         </button>
         <!-- Validation icon -->
         <span
-            [hidden]="validation.get(prop.name).isValid"
+            [hidden]="vs.get(prop).isValid"
             class="error"
-            [matTooltip]="validation.get(prop.name).message"
+            [matTooltip]="vs.get(prop).message"
             matTooltipPosition="left">
             <mat-icon>warning</mat-icon>
         </span>
         <!-- Text -->
-        <label (click)="prop.category === 'serial' ? formClosed[prop.name] = !formClosed[prop.name] : ''">{{prop.displayName}}{{!!prop.required ? '*' : ''}}</label>
+        <label
+            (click)="(isExpandable(prop)) ? formClosed[prop.name] = !formClosed[prop.name] : ''"
+        >{{prop.displayName}}{{!!prop.required ? '*' : ''}}</label>
     </div>
 
     <!-- Property container -->
@@ -28,10 +36,10 @@
             <mat-checkbox
                 type="text"
                 [id]="'prop' + idx"
-                [class.invalid]="!validation.get(prop.name).isValid"
+                [class.invalid]="!vs.get(prop).isValid"
                 [(ngModel)]="data[prop.name]"
                 [rfFocusNext]="'prop' + (idx + 1)"
-                (change)="validate(prop)"
+                (change)="vs.validate(prop)"
             ></mat-checkbox>
         </ng-container>
 
@@ -40,12 +48,12 @@
             <input
                 type="text"
                 [id]="'prop' + idx"
-                [class.invalid]="!validation.get(prop.name).isValid"
+                [class.invalid]="!vs.get(prop).isValid"
                 [(ngModel)]="data[prop.name]"
                 [maxlength]="prop.maxlen"
                 [rfFocusNext]="'prop' + (idx + 1)"
-                (keyup)="validate(prop)"
-                (change)="validate(prop)"
+                (keyup)="vs.validate(prop)"
+                (change)="vs.validate(prop)"
             >
 <!--            <span class="badge">txt</span>-->
         </ng-container>
@@ -56,12 +64,12 @@
                 type="text"
                 rows="6"
                 [id]="'prop' + idx"
-                [class.invalid]="!validation.get(prop.name).isValid"
+                [class.invalid]="!vs.get(prop).isValid"
                 [(ngModel)]="data[prop.name]"
                 [maxlength]="prop.maxlen"
                 [rfFocusNext]="'prop' + (idx + 1)"
-                (keyup)="validate(prop)"
-                (change)="validate(prop)"
+                (keyup)="vs.validate(prop)"
+                (change)="vs.validate(prop)"
             ></textarea>
 <!--            <span class="badge">txt</span>-->
         </ng-container>
@@ -72,12 +80,12 @@
             <input
                 type="text"
                 [id]="'prop' + idx"
-                [class.invalid]="!validation.get(prop.name).isValid"
+                [class.invalid]="!vs.get(prop).isValid"
                 [(ngModel)]="data[prop.name]"
                 [maxlength]="prop.maxlen"
                 [rfFocusNext]="'prop' + (idx + 1)"
-                (keyup)="validate(prop)"
-                (change)="validate(prop)"
+                (keyup)="vs.validate(prop)"
+                (change)="vs.validate(prop)"
             >
             <!-- TODO: add input actions for number field -->
             <!--            <div calss="input-actions">-->
@@ -93,12 +101,12 @@
             <input
                 type="text"
                 [id]="'prop' + idx"
-                [class.invalid]="!validation.get(prop.name).isValid"
+                [class.invalid]="!vs.get(prop).isValid"
                 [(ngModel)]="data[prop.name]"
                 [maxlength]="prop.maxlen"
                 [rfFocusNext]="'prop' + (idx + 1)"
-                (keyup)="validate(prop)"
-                (change)="validate(prop)"
+                (keyup)="vs.validate(prop)"
+                (change)="vs.validate(prop)"
             >
 <!--            <span class="badge">#</span>-->
         </ng-container>
@@ -116,15 +124,15 @@
                 class="input-date"
                 type="text"
                 [id]="'prop' + idx"
-                [class.invalid]="!validation.get(prop.name).isValid"
+                [class.invalid]="!vs.get(prop).isValid"
                 [(ngModel)]="data[prop.name]"
                 [required]="!!prop.required"
                 [rfFocusNext]="'prop' + (idx + 1)"
                 (keydown.tab)="hidePicker(picker)"
                 (keydown.enter)="hidePicker(picker)"
                 (click)="openDatePicker(picker, inp)"
-                (keyup)="validate(prop)"
-                (change)="validate(prop)"
+                (keyup)="vs.validate(prop)"
+                (change)="vs.validate(prop)"
                 pattern="">
             <button class="btn btn-icon btn-date" (click)="openDatePicker(picker, inp)">
                 <mat-icon>today</mat-icon>
@@ -144,15 +152,15 @@
                 class="input-date"
                 type="text"
                 [id]="'prop' + idx"
-                [class.invalid]="!validation.get(prop.name).isValid"
+                [class.invalid]="!vs.get(prop).isValid"
                 [value]="data[prop.name]?.split('T')[0]"
                 [required]="!!prop.required"
                 [rfFocusNext]="'propEx' + idx"
                 (keydown.tab)="hidePicker(picker)"
                 (keydown.enter)="hidePicker(picker)"
                 (click)="openDatePicker(picker, inp)"
-                (keyup)="changeTimestamp(prop, inp, inpTime); validate(prop)"
-                (change)="changeTimestamp(prop, inp, inpTime); validate(prop)"
+                (keyup)="changeTimestamp(prop, inp, inpTime); vs.validate(prop)"
+                (change)="changeTimestamp(prop, inp, inpTime); vs.validate(prop)"
                 pattern="">
             <button class="btn btn-icon btn-date" (click)="openDatePicker(picker, inp)">
                 <mat-icon>today</mat-icon>
@@ -165,8 +173,8 @@
                 [id]="'propEx' + idx"
                 [rfDefaultValue]="getTime(data[prop.name])"
                 [rfFocusNext]="'prop' + (idx + 1)"
-                (keyup)="changeTimestamp(prop, inp, inpTime); validate(prop)"
-                (change)="changeTimestamp(prop, inp, inpTime); validate(prop)"
+                (keyup)="changeTimestamp(prop, inp, inpTime); vs.validate(prop)"
+                (change)="changeTimestamp(prop, inp, inpTime); vs.validate(prop)"
             >
         </div>
 
@@ -176,12 +184,12 @@
             <!-- TODO: add validation error style -->
             <ng-select
                 [id]="'prop' + idx"
-                [class.invalid]="!validation.get(prop.name).isValid"
+                [class.invalid]="!vs.get(prop).isValid"
                 [(ngModel)]="data[prop.name]"
-                [items]="relatedData?.get(prop.type)?.children"
-                bindValue="_id"
-                bindLabel="displayName"
-                (change)="validate(prop)"
+                [items]="relatedData[prop.type]"
+                bindValue="ID"
+                [bindLabel]="serialInfo[prop.type].displayProperty"
+                (change)="vs.validate(prop)"
             ></ng-select>
             <a
                 [routerLink]="'/object/' + prop.type + '/' + data[prop.name]"
@@ -195,17 +203,44 @@
         <!-- Serial -->
         <ng-container *ngSwitchCase="FieldType.Serial">
             <rf-form
+                #editor
                 [@slideToggle]="formClosed[prop.name] ? 'closed': 'opened'"
-                [properties]="serialInfo?.get(prop.type)?.fields"
+                [prop]="prop"
+                [properties]="serialInfo[prop.type]?.fields"
                 [data]="data[prop.name]"
                 [relatedData]="relatedData"
                 [serialInfo]="serialInfo">
             </rf-form>
         </ng-container>
 
-        <!-- TODO: add array type field -->
+        <!-- List field -->
+        <ng-container *ngSwitchCase="FieldType.List">
+            <ng-select
+                class="multiple"
+                [id]="'prop' + idx"
+                [class.invalid]="!vs.get(prop).isValid"
+                [(ngModel)]="data[prop.name]"
+                [items]="relatedData[prop.type]"
+                [bindValue]="prop.jsonreference === 'ID' ? 'ID' : ''"
+                [bindLabel]="serialInfo[prop.type]?.displayProperty"
+                [multiple]="true"
+                [closeOnSelect]="false"
+                [compareWith]="compareObjects"
+                (change)="vs.validate(prop)"
+            ></ng-select>
+        </ng-container>
+
+        <!-- Array -->
         <ng-container *ngSwitchCase="FieldType.Array">
-            <input type="text" disabled placeholder="Not supported yet">
+            <rf-array
+                #editor
+                [@slideToggle]="formClosed[prop.name] ? 'closed': 'opened'"
+                [prop]="prop"
+                [data]="data[prop.name]"
+                [relatedData]="relatedData"
+                [serialInfo]="serialInfo"
+            >
+            </rf-array>
         </ng-container>
 
     </ng-container>
