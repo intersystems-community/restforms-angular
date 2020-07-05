@@ -1,6 +1,6 @@
 {
     "**": {
-        "target": "http://35.195.19.94:52773/",
+        "target": "http://restforms2.eastus.azurecontainer.io:52773",
         "secure": false,
         "logLevel": "debug",
         "changeOrigin": true

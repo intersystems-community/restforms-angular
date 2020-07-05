@@ -36,6 +36,12 @@ input, textarea, select, ng-select > .ng-select-container {
         @include invalid-input;
     }
 
+    // This style needed to show invalid immediately, without checking for touched
+    // Used on arrays, during save
+    &.invalid-force {
+        @include invalid-input;
+    }
+
     &::placeholder {
         font-family: $font;
     }
@@ -136,9 +142,29 @@ label {
     }
 }
 
+// Button with icon for datepicker, etc.
+.btn-icon {
+    border: none;
+    background-color: transparent;
+    box-shadow: none;
+    color: var(--cl-txt);
+    outline: none;
+    &:active, &:focus {
+        outline: none;
+        border: none;
+        box-shadow: none;
+    }
+
+    & > mat-icon {
+        margin: 0;
+    }
+}
 
 // Invalid state of ng-select
 ng-select.ng-invalid.ng-touched .ng-select-container {
+    @include invalid-input;
+}
+ng-select.invalid-force {
     @include invalid-input;
 }
 
@@ -185,6 +211,12 @@ ng-select > .ng-select-container {
     }
 }
 
+// Multi select style
+ng-select.multiple > .ng-select-container {
+    min-height: 36px;
+    height: auto;
+}
+
 // Removed glow of nf-select
 .ng-select.ng-select-focused:not(.ng-select-opened)>.ng-select-container {
     box-shadow: none;
@@ -196,6 +228,11 @@ ng-select.ng-select-focused > .ng-select-container  {
 
 .ng-select.ng-select-opened>.ng-select-container {
     border: 2px solid var(--cl-accent);
+}
+// Fix multiple select content jump on open(due to border)
+.ng-select.ng-select-multiple.ng-select-opened .ng-select-container .ng-value-container {
+    padding-left: 6px;
+    padding-top: 4px;
 }
 
 // Fix material checkbox
@@ -218,3 +255,4 @@ mat-checkbox, .mat-checkbox-inner-container {
 .mat-checkbox-indeterminate.mat-accent .mat-checkbox-background, .mat-checkbox-checked.mat-accent .mat-checkbox-background {
     background-color: #ccc !important;
 }
+

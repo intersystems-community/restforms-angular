@@ -1,5 +1,11 @@
 <rf-header *ngIf="hs.visible$ | async"></rf-header>
+
 <router-outlet></router-outlet>
+
+
+
+<!-- Modals -->
+<rf-modal *ngFor="let modal of ms.modals | async" [data]="modal"></rf-modal>
 
 <!-- Error list -->
 <rf-error

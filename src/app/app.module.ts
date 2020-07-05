@@ -31,6 +31,10 @@ import {NgSelectModule} from '@ng-select/ng-select';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {DefaultValueDirective} from './directives/default-value.directive';
 import {MatCheckboxModule} from '@angular/material/checkbox';
+import { ArrayComponent } from './components/ui/array/array.component';
+import { ModalComponent } from './components/ui/modal/modal.component';
+import { ObjectSelectorComponent } from './components/ui/object-selector/object-selector.component';
+import {DragDropModule} from '@angular/cdk/drag-drop';
 
 @NgModule({
     declarations: [
@@ -46,7 +50,10 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
         ErrorComponent,
         ObjectDetailsComponent,
         HeadlineComponent,
-        FormComponent
+        FormComponent,
+        ArrayComponent,
+        ModalComponent,
+        ObjectSelectorComponent
     ],
     imports: [
         BrowserAnimationsModule,
@@ -68,7 +75,8 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
         MatDatepickerModule,
         NgSelectModule,
         MatTooltipModule,
-        MatCheckboxModule
+        MatCheckboxModule,
+        DragDropModule
     ],
     providers: [],
     bootstrap: [AppComponent]

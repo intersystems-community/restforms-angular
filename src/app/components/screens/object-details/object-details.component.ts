@@ -3,6 +3,7 @@ import {DataService, ENDPOINTS, IFieldInfo, IObjectInfo, IObjectList} from '../.
 import {Subscription} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
 import {FormComponent} from '../../ui/form/form.component';
+import {ValidationService} from '../../../services/validation.service';
 
 
 @Component({
@@ -23,9 +24,9 @@ export class ObjectDetailsComponent implements OnInit, OnDestroy {
     // Form data
     data: any;
     // Related forms data, stores all forms data if some fields has form type
-    relatedData = new Map<string, IObjectList>();
+    relatedData: { [key: string]: IObjectList } = {};
     // List of all clsses info for serial fields
-    serialInfo = new Map<string, IObjectInfo>();
+    serialInfo: { [key: string]: IObjectInfo } = {};
     // Route params
     params: { [key: string]: string };
 
@@ -34,6 +35,7 @@ export class ObjectDetailsComponent implements OnInit, OnDestroy {
     constructor(private ds: DataService,
                 private router: Router,
                 private cd: ChangeDetectorRef,
+                private vs: ValidationService,
                 private route: ActivatedRoute) {
     }
 
@@ -71,48 +73,55 @@ export class ObjectDetailsComponent implements OnInit, OnDestroy {
             this.params.id === 'new'
                 ? (this.data = {}) && Promise.resolve()
                 : this.ds.objectData(this.params.class, this.params.id).then(d => this.data = d)
-        ])
-            .finally(() => {
-                this.isLoading = false;
-            });
+        ]).finally(() => {
+            this.vs.initialize();
+            this.isLoading = false;
+        });
     }
 
     loadRelatedDataAndSerialClasses(field: IFieldInfo, requested: string[]): Promise<any> {
         return new Promise((res, rej) => {
+            const all = [];
             // Request data for form
             if (field.category.toLowerCase() === 'form') {
                 if (requested.indexOf(field.type + 'D') === -1) {
                     requested.push(field.type + 'D');
-                    const url = ENDPOINTS.OBJECTS_LIST.replace('{class}', field.type).replace('{query}', 'info');
-                    this.ds
+                    // TODO: make separate call for 'all' and 'info' depending on jsonreference === 'ID'
+                    const url = ENDPOINTS.OBJECTS_LIST.replace('{class}', field.type).replace('{query}', 'all');
+                    const promise = this.ds
                         .get(url)
                         .toPromise()
                         .then(data => {
-                            this.relatedData.set(field.type, data);
-                            res();
+                            this.relatedData[field.type] = data?.children;
                         });
+                    all.push(promise);
                 }
             }
             // Request class info for serial
-            if (field.category.toLowerCase() === 'serial') {
+            if (field.category.toLowerCase() === 'serial' || field.category.toLowerCase() === 'form') {
                 if (requested.indexOf(field.type + 'I') === -1) {
                     requested.push(field.type + 'I');
                     const url = ENDPOINTS.FORM_INFO.replace('{class}', field.type);
-                    return this.ds
+                    const promise = this.ds
                         .get(url)
                         .toPromise()
                         .then((data: IObjectInfo) => {
-                            this.serialInfo.set(field.type, data);
+                            this.serialInfo[field.type] = data;
                             const promises = [];
                             data.fields.forEach(f => {
                                 promises.push(this.loadRelatedDataAndSerialClasses(f, requested));
                             });
                             return Promise.all(promises);
-                        })
-                        .then(() => res());
+                        });
+                    all.push(promise);
                 }
             }
-            res();
+
+            if (all.length) {
+                Promise.all(all).then(res);
+            } else {
+                res();
+            }
         });
     }
 
@@ -121,8 +130,8 @@ export class ObjectDetailsComponent implements OnInit, OnDestroy {
      * also requests all class information for serial fields type
      */
     async requestRelatedFormsDataAndSerialClasses() {
-        this.relatedData = new Map<string, IObjectList>();
-        this.serialInfo = new Map<string, IObjectInfo>();
+        this.relatedData = {};
+        this.serialInfo = {};
         const requested = [];
         const promises = [];
 
@@ -147,10 +156,11 @@ export class ObjectDetailsComponent implements OnInit, OnDestroy {
         if (!this.form.validateAll()) {
             return;
         }
+        const data = this.form.getDataForSaving();
         // TODO: show success message
         this.isSaving = true;
 
-        void this.ds.saveObject(this.params.class, this.params.id, this.data)
+        void this.ds.saveObject(this.params.class, this.params.id, data)
             .then(() => this.goBack())
             .finally(() => this.isSaving = false);
     }
