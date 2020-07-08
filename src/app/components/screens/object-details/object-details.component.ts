@@ -4,6 +4,7 @@ import {Subscription} from 'rxjs';
 import {ActivatedRoute, Router} from '@angular/router';
 import {FormComponent} from '../../ui/form/form.component';
 import {ValidationService} from '../../../services/validation.service';
+import {ErrorService} from '../../../services/error.service';
 
 
 @Component({

@@ -2,14 +2,14 @@
 
 <router-outlet></router-outlet>
 
-
-
 <!-- Modals -->
 <rf-modal *ngFor="let modal of ms.modals | async" [data]="modal"></rf-modal>
 
 <!-- Error list -->
-<rf-error
-    *ngFor="let err of es.errors$ | async; let idx = index; trackBy:trackError"
-    [@toggleError]
-    [error]="err">
-</rf-error>
+<div class="errors">
+    <rf-error
+        *ngFor="let err of es.errors$ | async; let idx = index; trackBy:trackError"
+        [@toggleError]
+        [error]="err">
+    </rf-error>
+</div>
