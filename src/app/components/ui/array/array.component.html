@@ -20,7 +20,7 @@
         <ng-container [ngSwitch]="prop.category">
             <!-- Simple type -->
             <ng-container *ngSwitchCase="'datatype'">
-                <input type="text" [(ngModel)]="item.data">
+                <input type="text" [(ngModel)]="item.data" [class.invalid-force]="!vs.get(prop).isValid && (vs.get(prop).index === item.key + 'select')">
             </ng-container>
 
             <!-- Form type -->
@@ -30,8 +30,8 @@
                     [class.invalid-force]="!vs.get(prop).isValid && (vs.get(prop).index === item.key + 'select')"
                     [id]="'prop' + idx"
                     [(ngModel)]="item.data"
-                    [items]="relatedData[prop?.type]"
-                    [bindLabel]="prop.jsonreference === 'ID' ? '' : serialInfo[prop.type]?.displayProperty"
+                    [items]="ds.allData[prop?.type]"
+                    [bindLabel]="prop.jsonreference === 'ID' ? '' : ds.allModels[prop.type]?.displayProperty"
                 ></ng-select>
                 <!-- Navigate to object -->
                 <a

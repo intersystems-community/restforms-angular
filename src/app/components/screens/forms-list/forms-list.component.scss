@@ -76,10 +76,9 @@ input {
     }
 }
 
-// Column width TODO: make for more than 2 cols
+// Table columns
 td, th {
     font-family: $font;
-    // width: 50%;
 }
 
 // Table row style
@@ -128,7 +127,6 @@ mat-paginator {
     display: flex;
     align-items: center;
     justify-content: center;
-    // TODO: depends on empty
     & > mat-icon {
         margin: 0;
         opacity: 0.5;
@@ -141,8 +139,8 @@ mat-paginator {
 }
 
 .actions {
-    width: 100px !important; // TODO: remove this
-    padding: 0 !important;
+    width: 100px;
+    padding-right: 0 !important;
     & > .btn {
         border: none;
         outline: none;

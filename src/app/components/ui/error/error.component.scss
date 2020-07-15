@@ -1,11 +1,13 @@
 @import "src/scss/variables";
 
 :host {
+    pointer-events: all;
     font-family: $font;
     cursor: pointer;
-    position: absolute;
+    // position: absolute;
     padding: 4px 10px;
-    height: 32px;
+    // height: 32px;
+    margin-bottom: 10px;
     color: white;
     background-color: red;
     display: flex;
@@ -13,7 +15,7 @@
     align-items: center;
     border-radius: 4px;
     right: 10px;
-    white-space: nowrap;
+    // white-space: nowrap;
     max-width: 50%;
     transition: bottom 0.1s linear;
     z-index: 100;

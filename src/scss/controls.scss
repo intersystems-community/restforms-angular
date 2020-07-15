@@ -160,6 +160,29 @@ label {
     }
 }
 
+// Link button for object fields
+.btn-link {
+    color: var(--cl-txt);
+    width: 36px;
+    height: 36px;
+    text-decoration: none;
+    border: none;
+    opacity: 0.6;
+    background-color: transparent;
+    justify-content: center;
+    align-items: center;
+    margin-left: 4px;
+    vertical-align: top;
+    display: inline-flex;
+
+    & > mat-icon {
+        width: auto;
+        height: auto;
+        font-size: 32px;
+        transform: scaleX(-1) translateY(-3px);
+    }
+}
+
 // Invalid state of ng-select
 ng-select.ng-invalid.ng-touched .ng-select-container {
     @include invalid-input;
@@ -167,27 +190,6 @@ ng-select.ng-invalid.ng-touched .ng-select-container {
 ng-select.invalid-force {
     @include invalid-input;
 }
-
-//ng-select {
-//    border:0;
-//    min-height: 0;
-//    border-radius: 0;
-//}
-//ng-select .ng-select-container  {
-//    min-height: 0px;
-//    border-radius: 0;
-//}
-
-//.btn-link {
-//    background-color: transparent;
-//    border: none;
-//    color: #4a3aa8;
-//    box-shadow: none;
-//    font-weight: 500;
-//    &:hover {
-//        color: #5c49d1;
-//    }
-//}
 
 // Fix ng select styles
 ng-select > .ng-select-container {

@@ -1,39 +1,9 @@
 import {Component, Input, OnInit, QueryList, ViewChildren} from '@angular/core';
-import {IFieldInfo, IObjectInfo, IObjectList} from '../../../services/data.service';
+import {DataService, FieldType, IFieldInfo} from '../../../services/data.service';
 import {MatDatepicker} from '@angular/material/datepicker';
 import {animate, state, style, transition, trigger} from '@angular/animations';
 import {BaseDataEditor} from '../../../classes/BaseDataEditor';
 import {ValidationService} from '../../../services/validation.service';
-
-export enum FieldType {
-    // Implemented
-    String = '%Library.String',
-    VarString = '%Library.VarString',
-    Date = '%Library.Date',
-    Numeric = '%Library.Numeric',
-    Integer = '%Library.Integer',
-    TimeStamp = '%Library.TimeStamp',
-    Boolean = '%Library.Boolean',
-    Serial = 'serial',
-    Form = 'form',
-
-    // Not implemented
-    List = 'list',
-    Array = 'array'
-}
-
-// * %Library.BigInt,
-// * %Library.SmallInt,
-// * %Library.TinyInt
-// * %Library.Decimal,
-// * %Library.Double,
-// * %Library.Float,
-// * %Library.Currency,
-// * %Library.VarString,
-// * %Library.Char
-// * %Library.DateTime,
-// %Library.Time,
-// %Library.PosixTime
 
 @Component({
     selector: 'rf-form',
@@ -64,27 +34,55 @@ export class FormComponent extends BaseDataEditor implements OnInit {
 
     @Input() properties: IFieldInfo[];
     @Input() data: any;
-    @Input() relatedData: { [key: string]: IObjectList };
-    @Input() serialInfo: { [key: string]: IObjectInfo };
 
     FieldType = FieldType;
 
     formClosed: { [propName: string]: boolean } = {};
     compareObjects: any;
 
-    constructor(public vs: ValidationService) {
-        super(vs);
+    constructor(public vs: ValidationService, public ds: DataService) {
+        super(vs, ds);
         this.compareObjects = (a, b) => {
             return this.isEqual(a, b);
         };
     }
 
+    /**
+     * Returns time as string from posix time
+     */
+    static getTimeFromPosixTime(ptime: number): string {
+        const date = new Date(ptime * 1000);
+        const hours = date.getHours();
+        const minutes = '0' + date.getMinutes();
+        const seconds = '0' + date.getSeconds();
+        return hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+    }
+
     ngOnInit() {
         super.ngOnInit();
+        this.createEmptyObjectsForSerialFields();
         this.initPropValidation();
     }
 
     protected prepareData() {
+    }
+
+    /**
+     * Creates empty objects for serial fields
+     * to be able to bind data
+     * This is needed because data on server for this field
+     * can be undefined
+     */
+    private createEmptyObjectsForSerialFields() {
+        this.properties.forEach(p => {
+            if (p.category !== 'serial' && p.rfType !== FieldType.Array) {
+                return;
+            }
+            // Check if we have object in data for this serial
+            if (this.data && !this.data[p.name]) {
+                this.data[p.name] = {};
+            }
+        });
     }
 
     /**
@@ -102,60 +100,7 @@ export class FormComponent extends BaseDataEditor implements OnInit {
      * Initializes validation state for all properties
      */
     private initPropValidation() {
-        this.vs.addProperties(this.properties);
-    }
-
-    /**
-     * Returns property type
-     */
-    getPropType(prop: IFieldInfo): FieldType {
-        switch (prop.collection) {
-            case 'array': {
-                return prop.jsonreference === 'ID' ? FieldType.List : FieldType.Array;
-                break;
-            }
-            case 'list':
-                return FieldType.List;
-                break;
-        }
-
-        if (prop.category.toLowerCase() === 'datatype') {
-            switch (prop.type) {
-                case '%Library.Char':
-                    return FieldType.String;
-                    break;
-                case '%Library.DateTime':
-                    return FieldType.TimeStamp;
-                    break;
-                case '%Library.BigInt':
-                case '%Library.SmallInt':
-                case '%Library.TinyInt':
-                    return FieldType.Integer;
-                    break;
-                case '%Library.Decimal':
-                case '%Library.Double':
-                case '%Library.Float':
-                case '%Library.Currency':
-                    return FieldType.Numeric;
-                    break;
-            }
-            return prop.type as FieldType;
-        }
-
-        if (prop.category === 'form') {
-            return FieldType.Form;
-        }
-
-        if (prop.category === 'serial') {
-            // Check if we have object in data for this serial
-            // TODO: make it during data loading
-            if (!this.data[prop.name]) {
-                this.data[prop.name] = {};
-            }
-            return FieldType.Serial;
-        }
-
-        return FieldType.String;
+        this.vs.addProperties(this.properties, this.data);
     }
 
     /**
@@ -183,7 +128,9 @@ export class FormComponent extends BaseDataEditor implements OnInit {
                 v += 'T' + time;
             }
         }
-
+        // if (v.indexOf('T') === -1) {
+        //     v += 'T00:00:00Z';
+        // }
         this.data[prop.name] = v;
         this.vs.validate(prop);
     }
@@ -229,7 +176,7 @@ export class FormComponent extends BaseDataEditor implements OnInit {
     /**
      * Returns time part of date string
      */
-    getTime(date: string): string {
+    getTimeFromDatetime(date: string): string {
         if (!date) {
             return '';
         }
@@ -254,7 +201,7 @@ export class FormComponent extends BaseDataEditor implements OnInit {
      * If property expandable or not
      */
     isExpandable(prop: IFieldInfo): boolean {
-        return prop?.category === 'serial' || this.getPropType(prop) === FieldType.Array;
+        return prop?.category === 'serial' || prop.rfType === FieldType.Array;
     }
 
     /**
@@ -321,5 +268,46 @@ export class FormComponent extends BaseDataEditor implements OnInit {
             return this.isObjectIncludesAllFieldsWithValues(a, b);
         }
         return a === b;
+    }
+
+    /**
+     * Returns time for time field
+     */
+    getTime(prop: IFieldInfo) {
+        const value = this.data[prop.name];
+        if (!value) {
+            return '';
+        }
+        if (prop.type === '%Library.PosixTime') {
+            return FormComponent.getTimeFromPosixTime(value);
+        } else {
+            return value.replace('Z', '');
+        }
+    }
+
+    public getPosixTimeFromTime(time: string, originalValue: number): number {
+        const parts = time.split(':');
+        if (parts.length !== 3) {
+            return 0;
+        }
+        let d = new Date(1970, 0, 1);
+        if (originalValue) {
+            d = new Date(originalValue * 1000);
+        }
+        d.setHours(parseInt(parts[0], 10));
+        d.setMinutes(parseInt(parts[1], 10));
+        d.setSeconds(parseInt(parts[2], 10));
+        return Date.parse(d as any) / 1000;
+    }
+
+    /**
+     * Change time in model during input in field
+     */
+    changeTime(prop: IFieldInfo, inpTime: HTMLInputElement) {
+        if (prop.type === '%Library.PosixTime') {
+            this.data[prop.name] = this.getPosixTimeFromTime(inpTime.value, this.data[prop.name]);
+        } else {
+            this.data[prop.name] = inpTime.value + 'Z';
+        }
     }
 }

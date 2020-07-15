@@ -5,3 +5,17 @@
     // height: 100%;
     width: 100%;
 }
+
+// Container for errors messages
+.errors {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    position: fixed;
+    width: 30vw;
+    right: 10px;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+}
