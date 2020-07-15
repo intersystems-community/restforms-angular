@@ -58,12 +58,13 @@ mat-form-field {
 .input-date {
     max-width: 150px;
     padding-right: 28px;
+    margin-right: 10px;
 }
 
 // Time input
 .input-time {
-    margin-left: 10px;
-    width: 100px;
+    // margin-left: 10px;
+    width: 150px;
 }
 
 .btn-date {
@@ -134,40 +135,3 @@ textarea {
         margin-bottom: -1px;
     }
 }
-
-// Link button for object fields
-.btn-link {
-    color: var(--cl-txt);
-    width: 36px;
-    height: 36px;
-    text-decoration: none;
-    border: none;
-    opacity: 0.6;
-    background-color: transparent;
-    justify-content: center;
-    align-items: center;
-    margin-left: 4px;
-    vertical-align: top;
-    display: inline-flex;
-
-    & > mat-icon {
-        width: auto;
-        height: auto;
-        font-size: 32px;
-        transform: scaleX(-1) translateY(-3px);
-    }
-}
-
-//.badge {
-//    position: absolute;
-//    right: 8px;
-//    top: 29px;
-//    background-color: #c5bdbd;
-//    color: white;
-//    padding: 2px;
-//    padding-left: 4px;
-//    padding-right: 4px;
-//    border-radius: 4px;
-//    font-size: 14px;
-//    font-weight: 400;
-//}

@@ -1,6 +1,7 @@
 @import "src/scss/variables";
 
 :host {
+    pointer-events: all;
     font-family: $font;
     cursor: pointer;
     // position: absolute;

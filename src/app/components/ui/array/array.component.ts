@@ -1,7 +1,8 @@
 import {Component, HostBinding, HostListener, Input, OnInit} from '@angular/core';
-import {IObjectInfo, IObjectList} from '../../../services/data.service';
+import {IObjectModel, IObjectList, DataService, PRIMITIVE_TYPES, FieldType} from '../../../services/data.service';
 import {BaseDataEditor} from '../../../classes/BaseDataEditor';
 import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
+import {ValidationService} from '../../../services/validation.service';
 
 interface IArrayData {
     key: string;
@@ -17,11 +18,13 @@ const KEY_PREFIX = 'Key';
 })
 export class ArrayComponent extends BaseDataEditor implements OnInit {
     @Input() data: { [key: string]: any };
-    @Input() relatedData: Map<string, IObjectList>;
-    @Input() serialInfo: Map<string, IObjectInfo>;
 
     preparedData: IArrayData[];
     trackByFn = (i: number, data: IArrayData) => i;
+
+    constructor(public vs: ValidationService, public ds: DataService) {
+        super(vs, ds);
+    }
 
     ngOnInit() {
         super.ngOnInit();
@@ -49,11 +52,38 @@ export class ArrayComponent extends BaseDataEditor implements OnInit {
      * Returns data for saving from Array to Key-Value
      */
     getDataForSaving(): any {
-        const result = JSON.parse(JSON.stringify(this.data));
+        const result = {}; // JSON.parse(JSON.stringify(this.data));
+        // Delete all non exists keys
+        // Object.keys(result).forEach(key => {
+        //     const exists = this.preparedData.some(el => el.key === key);
+        //     if (!exists) {
+        //         delete result[key];
+        //     }
+        // });
+
+        // Convert array to object key->value
         this.preparedData.forEach(v => {
-            result[v.key] = v.data;
+            let value: any = v.data;
+
+            // Convert primitives to exact type
+            if (this.prop.category === 'datatype') {
+                const type = this.ds.getSimpleType(this.prop.type);
+                switch (type) {
+                    case FieldType.Integer:
+                        value = parseInt(value, 10);
+                        break;
+                    case FieldType.Numeric:
+                        value = parseFloat(value);
+                        break;
+                }
+            }
+
+            result[v.key] = value;
+
             // Delete ID because can't be handled by restforms2 services
-            delete result[v.key].ID;
+            if (result[v.key] && typeof result[v.key] === 'object') {
+                delete result[v.key].ID;
+            }
         });
         console.log(result);
         return result;
@@ -87,7 +117,7 @@ export class ArrayComponent extends BaseDataEditor implements OnInit {
         const arr = this.getDataForSaving();
         const v = this.vs.get(this.prop);
         if (!v) {
-            console.warn(`Can;t find validator for array: `, this.prop);
+            console.warn(`Can't find validator for array: `, this.prop);
             return;
         }
         v.isValid = true;
@@ -105,11 +135,30 @@ export class ArrayComponent extends BaseDataEditor implements OnInit {
                         v.index = p;
                         return false;
                     }
-                    if (!arr[p] || Object.keys(arr[p]).length === 0) {
-                        v.isValid = false;
-                        v.message = `Please select form for key "${p}"`;
-                        v.index = p + 'select';
-                        return false;
+                    // Check if this is array with primitive values
+                    if (this.prop.category === 'datatype') {
+                        // Check if value is entred
+                        if (arr[p] === undefined) {
+                            v.isValid = false;
+                            v.message = `Please enter value form for key "${p}"`;
+                            v.index = p + 'select';
+                            return;
+                        }
+
+                        // Check for valid value type
+                        this.vs.validateValue(this.ds.getSimpleType(this.prop.type), v, arr[p]);
+                        if (!v.isValid) {
+                            v.index = p;
+                            return false;
+                        }
+                    } else {
+                        // Check if object was selected
+                        if (!arr[p] || Object.keys(arr[p]).length === 0) {
+                            v.isValid = false;
+                            v.message = `Please select form for key "${p}"`;
+                            v.index = p + 'select';
+                            return false;
+                        }
                     }
                 }
             }

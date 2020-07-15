@@ -1,13 +1,14 @@
 import {Input, OnInit} from '@angular/core';
-import {IFieldInfo} from '../services/data.service';
+import {DataService, IFieldInfo} from '../services/data.service';
 import {ValidationService} from '../services/validation.service';
 
 export abstract class BaseDataEditor implements OnInit {
     @Input() prop: IFieldInfo;
     preparedData: any;
 
-    constructor(public vs: ValidationService) {}
-
+    constructor(public vs: ValidationService,
+                public ds: DataService) {
+    }
 
     ngOnInit() {
         this.prepareData();

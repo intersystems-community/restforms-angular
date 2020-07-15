@@ -1,15 +1,19 @@
 import {Injectable} from '@angular/core';
-import {IFieldInfo} from './data.service';
-import {FieldType} from '../components/ui/form/form.component';
+import {FieldType, IFieldInfo} from './data.service';
+import {FormComponent} from '../components/ui/form/form.component';
+
+declare const BigInt: any;
 
 export class PropValidationState {
     prop: IFieldInfo;
     isValid = true;
     message = '';
     index = '';
+    data: any;
 
-    constructor(prop: IFieldInfo) {
+    constructor(prop: IFieldInfo, data: any) {
         this.prop = prop;
+        this.data = data;
     }
 }
 
@@ -32,12 +36,12 @@ export class ValidationService {
     /**
      * Adds properties to validation
      */
-    addProperties(props: IFieldInfo[]) {
+    addProperties(props: IFieldInfo[], data: any) {
         if (!props) {
             return;
         }
         props.forEach(p => {
-            this.data.set(p, new PropValidationState(p));
+            this.data.set(p, new PropValidationState(p, data));
         });
     }
 
@@ -46,62 +50,6 @@ export class ValidationService {
      */
     get(prop: IFieldInfo): PropValidationState {
         return this.data.get(prop);
-    }
-
-
-    /**
-     * Returns property type
-     * TODO: move _type field of prop. Fill in form init
-     */
-    getPropType(prop: IFieldInfo): FieldType {
-        if (prop.category.toLowerCase() === 'datatype') {
-            switch (prop.type) {
-                case '%Library.Char':
-                    return FieldType.String;
-                    break;
-                case '%Library.DateTime':
-                    return FieldType.TimeStamp;
-                    break;
-                case '%Library.BigInt':
-                case '%Library.SmallInt':
-                case '%Library.TinyInt':
-                    return FieldType.Integer;
-                    break;
-                case '%Library.Decimal':
-                case '%Library.Double':
-                case '%Library.Float':
-                case '%Library.Currency':
-                    return FieldType.Numeric;
-                    break;
-            }
-            return prop.type as FieldType;
-        }
-
-        if (prop.category === 'form') {
-            switch (prop.collection) {
-                case '':
-                    return FieldType.Form;
-                    break;
-                case 'array': {
-                    return prop.jsonreference === 'ID' ? FieldType.List : FieldType.Array;
-                    break;
-                }
-                case 'list':
-                    return FieldType.List;
-                    break;
-            }
-        }
-
-        if (prop.category === 'serial') {
-            // Check if we have object in data for this serial
-            // TODO: make it during data loading
-            if (!this.data[prop.name]) {
-                this.data[prop.name] = {};
-            }
-            return FieldType.Serial;
-        }
-
-        return FieldType.String;
     }
 
     /**
@@ -116,43 +64,50 @@ export class ValidationService {
         v.isValid = true;
         v.message = '';
         if (prop.required === 1) {
-            if (!this.data[prop.name]) {
+            if (!v.data[prop.name]) {
                 v.isValid = false;
                 v.message = 'This field is required';
             }
         } else {
-            const value = this.data[v.prop.name];
+            const value = v.data[v.prop.name];
             if (value === '' || value === undefined || value === null) {
                 return v;
             }
         }
-        const type = this.getPropType(prop);
+        this.validateValue(prop.rfType, v, v.data[v.prop.name]);
+        return v;
+    }
+
+    /**
+     * Validates value
+     */
+    validateValue(type: FieldType, v: PropValidationState, value: any) {
         switch (type) {
             case FieldType.Integer:
-                this.validateInteger(v);
+                this.validateInteger(v, value);
                 break;
             case FieldType.Numeric:
-                this.validateNumeric(v);
+                this.validateNumeric(v, value);
                 break;
             case FieldType.Date:
-                this.validateDate(v);
+                this.validateDate(v, false, value);
                 break;
             case FieldType.TimeStamp:
-                this.validateDate(v, true);
+                this.validateDate(v, true, value);
                 break;
-            // case FieldType.Array:
-            //     this.validateArray(v);
-            //     break;
+            case FieldType.Time:
+                this.validateTime(v, value);
+                break;
         }
-        return v;
     }
 
     /**
      * Validates integer field
      */
-    private validateInteger(v: PropValidationState) {
-        const value = this.data[v.prop.name];
-        if (isNaN(+value) || !/^\d+$/.test(value)) {
+    private validateInteger(v: PropValidationState, value: any) {
+        try {
+            const v = BigInt(value);
+        } catch (e) {
             v.isValid = false;
             v.message = 'Please enter valid integer number';
         }
@@ -161,8 +116,7 @@ export class ValidationService {
     /**
      * Validates number field
      */
-    private validateNumeric(v: PropValidationState) {
-        const value = this.data[v.prop.name];
+    private validateNumeric(v: PropValidationState, value: any) {
         if (isNaN(+value) || !/^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$/.test(value)) {
             v.isValid = false;
             v.message = 'Please enter valid number';
@@ -172,8 +126,7 @@ export class ValidationService {
     /**
      * Validates date field
      */
-    private validateDate(v: PropValidationState, validateTime = false) {
-        let value = this.data[v.prop.name];
+    private validateDate(v: PropValidationState, validateTime = false, value: any) {
         let time = '';
         if (validateTime) {
             time = value.split('T')[1]?.replace('Z', '').split('.')[0];
@@ -200,6 +153,22 @@ export class ValidationService {
             //
             // /^(?:1[0-2]|0?[0-9]):[0-5][0-9]:[0-5][0-9]$/
             // for 12-hour time, leading zeroes optional.
+        }
+    }
+
+    /**
+     * Validation for time field
+     */
+    private validateTime(v: PropValidationState, time: any) {
+        let t = time;
+        if (v.prop.type === '%Library.PosixTime') {
+            t = FormComponent.getTimeFromPosixTime(t);
+        } else {
+            t = t.replace('Z', '');
+        }
+        if (!/^(?:2[0-3]|[01]?[0-9]):[0-5][0-9]:[0-5][0-9]$/.test(t)) {
+            v.isValid = false;
+            v.message = 'Please enter a valid time in format "hh:mm:ss"';
         }
     }
 }

@@ -7,7 +7,7 @@
     </button>
 
     <!-- Title-->
-    <h1>{{params.id === 'new' ? 'New object' : (data ? data[model?.displayProperty] : '')}}</h1>
+    <h1>{{params.id === 'new' ? 'New object' : (ds.objectData ? ds.objectData[ds.objectModel?.displayProperty] : '')}}</h1>
     <h2>{{params.class}}</h2>
     <!-- Action buttons -->
 <!--    <button *ngIf="!isLoading && isCreate" class="btn btn-success"><mat-icon>add</mat-icon>Create</button>-->
@@ -24,10 +24,8 @@
     #form
     *ngIf="!isLoading"
     [class.disabled]="isSaving"
-    [properties]="model?.fields"
-    [data]="data"
-    [relatedData]="relatedData"
-    [serialInfo]="serialInfo"
+    [properties]="ds.objectModel?.fields"
+    [data]="ds.objectData"
 >
 </rf-form>
 

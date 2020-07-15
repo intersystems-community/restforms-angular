@@ -49,30 +49,6 @@
     //}
 }
 
-// TODO: refactor and make one style for all btn-links
-// Link button for object fields
-.btn-link {
-    color: var(--cl-txt);
-    width: 36px;
-    height: 36px;
-    text-decoration: none;
-    border: none;
-    opacity: 0.6;
-    background-color: transparent;
-    justify-content: center;
-    align-items: center;
-    margin-left: 4px;
-    vertical-align: top;
-    display: inline-flex;
-
-    & > mat-icon {
-        width: auto;
-        height: auto;
-        font-size: 32px;
-        transform: scaleX(-1) translateY(-3px);
-    }
-}
-
 // Add button
 .btn-add {
     min-width: 100px;

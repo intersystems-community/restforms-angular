@@ -1,8 +1,7 @@
-<!-- TODO: check serial -->
 <div class="prop-container"
      [class.prop-expandable]="isExpandable(prop)"
      *ngFor="let prop of properties; let idx = index; trackBy: propTrackBy"
-     [attr.data-type]="getPropType(prop)"
+     [attr.data-type]="prop.rfType"
 >
     <!-- Property label -->
     <div class="prop-label">
@@ -30,7 +29,7 @@
     </div>
 
     <!-- Property container -->
-    <ng-container [ngSwitch]="getPropType(prop)">
+    <ng-container [ngSwitch]="prop.rfType">
         <!-- Boolean -->
         <ng-container *ngSwitchCase="FieldType.Boolean">
             <mat-checkbox
@@ -55,7 +54,6 @@
                 (keyup)="vs.validate(prop)"
                 (change)="vs.validate(prop)"
             >
-<!--            <span class="badge">txt</span>-->
         </ng-container>
 
         <!-- VarString -->
@@ -75,7 +73,6 @@
         </ng-container>
 
         <!-- Numeric -->
-        <!-- TODO: make numeric filed validation -->
         <ng-container *ngSwitchCase="FieldType.Numeric">
             <input
                 type="text"
@@ -96,7 +93,6 @@
         </ng-container>
 
         <!-- Integer -->
-        <!-- TODO: make integer filed validation -->
         <ng-container *ngSwitchCase="FieldType.Integer">
             <input
                 type="text"
@@ -171,7 +167,7 @@
                 class="input-time"
                 type="text"
                 [id]="'propEx' + idx"
-                [rfDefaultValue]="getTime(data[prop.name])"
+                [rfDefaultValue]="getTimeFromDatetime(data[prop.name])"
                 [rfFocusNext]="'prop' + (idx + 1)"
                 (keyup)="changeTimestamp(prop, inp, inpTime); vs.validate(prop)"
                 (change)="changeTimestamp(prop, inp, inpTime); vs.validate(prop)"
@@ -181,14 +177,13 @@
         <!-- Form type -->
         <ng-container *ngSwitchCase="FieldType.Form">
             <!-- TODO: add focus next support -->
-            <!-- TODO: add validation error style -->
             <ng-select
                 [id]="'prop' + idx"
                 [class.invalid]="!vs.get(prop).isValid"
                 [(ngModel)]="data[prop.name]"
-                [items]="relatedData[prop.type]"
+                [items]="ds.allData[prop.type]"
                 bindValue="ID"
-                [bindLabel]="serialInfo[prop.type].displayProperty"
+                [bindLabel]="ds.allModels[prop.type].displayProperty"
                 (change)="vs.validate(prop)"
             ></ng-select>
             <a
@@ -206,10 +201,8 @@
                 #editor
                 [@slideToggle]="formClosed[prop.name] ? 'closed': 'opened'"
                 [prop]="prop"
-                [properties]="serialInfo[prop.type]?.fields"
-                [data]="data[prop.name]"
-                [relatedData]="relatedData"
-                [serialInfo]="serialInfo">
+                [properties]="ds.allModels[prop.type]?.fields"
+                [data]="data[prop.name]">
             </rf-form>
         </ng-container>
 
@@ -220,9 +213,9 @@
                 [id]="'prop' + idx"
                 [class.invalid]="!vs.get(prop).isValid"
                 [(ngModel)]="data[prop.name]"
-                [items]="relatedData[prop.type]"
+                [items]="ds.allData[prop.type]"
                 [bindValue]="prop.jsonreference === 'ID' ? 'ID' : ''"
-                [bindLabel]="serialInfo[prop.type]?.displayProperty"
+                [bindLabel]="ds.allModels[prop.type]?.displayProperty"
                 [multiple]="true"
                 [closeOnSelect]="false"
                 [compareWith]="compareObjects"
@@ -237,10 +230,23 @@
                 [@slideToggle]="formClosed[prop.name] ? 'closed': 'opened'"
                 [prop]="prop"
                 [data]="data[prop.name]"
-                [relatedData]="relatedData"
-                [serialInfo]="serialInfo"
             >
             </rf-array>
+        </ng-container>
+
+
+        <!-- Time and Posix time-->
+        <ng-container *ngSwitchCase="FieldType.Time">
+            <input
+                #inpTime
+                class="input-time"
+                type="text"
+                [id]="'prop' + idx"
+                [rfDefaultValue]="getTime(prop)"
+                [rfFocusNext]="'prop' + (idx + 1)"
+                (keyup)="changeTime(prop, inpTime); vs.validate(prop)"
+                (change)="changeTime(prop, inpTime); vs.validate(prop)"
+            >
         </ng-container>
 
     </ng-container>

@@ -1,4 +1,4 @@
-import {DataService, ENDPOINTS, IFormData, IFormDataEx} from '../services/data.service';
+import {DataService, ENDPOINTS, IFormData, IFormDataEx, IObjectModel} from '../services/data.service';
 import {HeaderService} from '../services/header.service';
 import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {MatTableDataSource} from '@angular/material/table';
@@ -6,6 +6,7 @@ import {MatPaginator} from '@angular/material/paginator';
 import {MatSort} from '@angular/material/sort';
 import {ActivatedRoute, Router} from '@angular/router';
 import {ObjectsListComponent} from '../components/screens/objects-list/objects-list.component';
+import {ModalService} from '../services/modal.service';
 
 /**
  * Column defenition
@@ -25,7 +26,7 @@ export abstract class BaseListClass implements OnInit, OnDestroy {
     isCreate = false;
     isSettings = false;
 
-    objInfo: any;
+    objInfo: IObjectModel;
 
     backUrl = '';
     abstract columnsData: string[];
@@ -36,6 +37,7 @@ export abstract class BaseListClass implements OnInit, OnDestroy {
 
     constructor(protected ds: DataService,
                 private hs: HeaderService,
+                private ms: ModalService,
                 protected route: ActivatedRoute,
                 protected router: Router) {
         this.hs.showHeader();
@@ -99,8 +101,25 @@ export abstract class BaseListClass implements OnInit, OnDestroy {
 
     async onDeleteClick(row: any, $event: MouseEvent) {
         $event.stopPropagation();
-        await this.ds.deleteObject(this.params.class, row._id);
-        this.requestData();
+        this.ms.show({
+            title: 'Delete',
+            message: `Do you really want to delete form: "${row[this.columnsData[0]]}"?`,
+            buttons: [
+                {
+                    label: 'No',
+                    autoClose: true
+                },
+                {
+                    label: 'Yes',
+                    default: true,
+                    autoClose: true,
+                    click: async () => {
+                        await this.ds.deleteObject(this.params.class, row._id);
+                        this.requestData();
+                    }
+                }
+            ]
+        });
     }
 
     abstract onRowClick(row: any, $event: MouseEvent);
