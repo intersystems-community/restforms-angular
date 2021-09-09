@@ -75,7 +75,7 @@
         <!-- Numeric -->
         <ng-container *ngSwitchCase="FieldType.Numeric">
             <input
-                type="text"
+                type="number"
                 [id]="'prop' + idx"
                 [class.invalid]="!vs.get(prop).isValid"
                 [(ngModel)]="data[prop.name]"
@@ -95,7 +95,7 @@
         <!-- Integer -->
         <ng-container *ngSwitchCase="FieldType.Integer">
             <input
-                type="text"
+                type="number"
                 [id]="'prop' + idx"
                 [class.invalid]="!vs.get(prop).isValid"
                 [(ngModel)]="data[prop.name]"

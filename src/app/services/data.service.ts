@@ -365,6 +365,7 @@ export class DataService {
                 return FieldType.String;
             case '%Library.DateTime':
                 return FieldType.TimeStamp;
+            case '%Library.Integer':
             case '%Library.BigInt':
             case '%Library.SmallInt':
             case '%Library.TinyInt':
