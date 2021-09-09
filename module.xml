@@ -3,7 +3,7 @@
   <Document name="restforms2-ui.zpm">
     <Module>
       <Name>restforms2-ui</Name>
-      <Version>1.0.1</Version>
+      <Version>1.0.2</Version>
         <Description>Client for restforms2</Description>
       <Packaging>module</Packaging>
       <SourcesRoot>src</SourcesRoot>
